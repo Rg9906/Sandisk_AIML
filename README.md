@@ -157,6 +157,33 @@ is retained because its attention weights give Model B a block interpretability 
 pooling cannot provide (`figures/block_attention.png`), and that figure states its own
 uniform baseline so the concentration is not oversold.
 
+### Things we tried that did not work
+
+Kept here because the negative results were more informative than the wins:
+
+| attempt | result | why |
+|---|---|---|
+| **Matched filter over blocks** (max of sliding-window mean, widths 25–800) | d = 0.13 vs **0.69 for the plain mean** | Taking a max over ~2000 window positions inflates the null far more than it gains signal. The defect adds a fixed total mass, so the global mean is the sufficient statistic. |
+| **Robust one-sided detectors** (mean − median, trimmed contrasts, tail excess) | d = 0.06–0.21 vs 0.69 | Contamination is 5% of blocks at ~0.47σ. It shifts the whole distribution slightly rather than creating a tail, so robust contrasts subtract the signal away. |
+| **24 of the 25 block features** | +0.0007 AUC-PR over `bl_mean` alone | One feature — the mean of the 2000 readings — captures **98%** of the entire block contribution (0.5852 of 0.5859). They do help F1 (0.549 vs 0.521), so they stay. |
+| **Optuna, 40 trials on AUC-PR** | +0.0026 — within noise | Feature and design choices moved AUC-PR 6–10× more. Run last, timeboxed, and reported rather than quietly dropped. |
+
+**The 2000 block readings reduce to one number.** That is the honest headline of the
+Model B analysis, and no amount of architecture recovered more from them.
+
+### A bug the tuner caught
+
+Optuna's "best" configuration scored *worse on validation* than the hand-set defaults —
+impossible, since we seeded the search with those defaults. Chasing it found a real
+defect: `design_matrix(train)` rebuilt the wafer-prior columns from the **full-fit**
+stage-1 model, while `fit()` had trained on **cross-fitted OOF** values. Anything that
+re-trained on that matrix — the tuner and the entire imbalance ladder — was fitting
+in-sample-sharpened features the shipped model never saw.
+
+Fixed by storing the exact training matrix on the model. The check that it worked: the
+imbalance ladder's rung 2 now reproduces Model B's 0.5859 exactly, which it did not
+before.
+
 ### Deployment-grade extras
 
 - **Calibration.** Isotonic on a held-out calibration split: Brier **0.0576 → 0.0244**,

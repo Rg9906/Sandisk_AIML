@@ -108,6 +108,8 @@ class WaferLensModel:
         self.stage1_columns_: list[str] = []
         self.threshold_: float = float("nan")
         self.columns_: list[str] = []
+        self._train_key_: int | None = None
+        self._train_X_: pd.DataFrame | None = None
 
         self.params = params or dict(
             n_estimators=300,
@@ -159,6 +161,15 @@ class WaferLensModel:
 
         if self.two_stage:
             X_all = self._fit_stage1(train, X_all, y_tr, el_tr)
+
+        # Remember the EXACT matrix we trained on. The wafer-prior columns here are built
+        # from cross-fitted stage-1 scores, whereas `design_matrix()` rebuilds them from
+        # the full-fit stage-1 model. Those are different matrices, and anything that
+        # re-trains on `design_matrix(train)` -- the tuner, the imbalance ladder -- would
+        # otherwise be fitting on in-sample-sharpened features that no longer match what
+        # the shipped model saw.
+        self._train_key_ = id(train)
+        self._train_X_ = X_all
 
         X_tr = X_all.loc[el_tr].reset_index(drop=True)
         self.columns_ = list(X_tr.columns)
@@ -224,7 +235,17 @@ class WaferLensModel:
         return self.clf.predict_proba(X[self.columns_])[:, 1]
 
     def design_matrix(self, split: Split) -> pd.DataFrame:
-        """The exact matrix the final model consumes -- used by the explainer."""
+        """
+        The exact matrix the final model consumes -- used by the explainer and by any
+        code that re-trains on these features.
+
+        For the split this model was FITTED on, returns the stored training matrix
+        (cross-fitted wafer prior) rather than rebuilding it. Rebuilding would produce
+        in-sample stage-1 scores, so a re-trained model would learn to trust the wafer
+        prior far more than it can be trusted at inference.
+        """
+        if self.two_stage and getattr(self, "_train_key_", None) == id(split):
+            return self._train_X_[self.columns_]
         X = self.build_features(split).X
         if self.two_stage:
             X = self._apply_stage1(split, X)
