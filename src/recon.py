@@ -129,7 +129,7 @@ def q3_spatial_parametric_link(split, max_wafers: int = 40) -> tuple[str, dict]:
     fcols = split.feature_cols
     wafers = list(dies["wafer_id"].unique())[:max_wafers]
 
-    bnr_all, z_all, y_all, rad_all = [], [], [], []
+    bnr_all, z_all, y_all, rad_all, wid_all = [], [], [], [], []
     for wid in wafers:
         w = dies[dies["wafer_id"] == wid]
         grid = _wafer_grid(dies, wid)          # built from ALL dies -- old fails are INPUT
@@ -150,15 +150,41 @@ def q3_spatial_parametric_link(split, max_wafers: int = 40) -> tuple[str, dict]:
         rad_all.append(rad[r, c])
         z_all.append(z)
         y_all.append(w_el["label"].to_numpy())
+        wid_all.append(np.full(len(w_el), wid, dtype=object))
 
     bnr = np.concatenate(bnr_all)
     z = np.concatenate(z_all)
     y = np.concatenate(y_all)
     rad = np.concatenate(rad_all)
+    wid_arr = np.concatenate(wid_all)
 
     corr_bnr_z = float(np.corrcoef(bnr, z)[0, 1])
     corr_bnr_y = float(np.corrcoef(bnr, y)[0, 1])
     corr_rad_y = float(np.corrcoef(rad, y)[0, 1])
+
+    # WITHIN-WAFER correlation: centre both variables inside each wafer before
+    # correlating. Each wafer's failure rate is an independent exponential draw, and that
+    # between-wafer variance is a confounder -- a wafer can be covered in pre-test
+    # failures yet draw a low new-failure rate, and vice versa. Pooling across wafers
+    # therefore mixes two different questions and can even flip the sign (Simpson's
+    # paradox). The within-wafer figure is the one that matches how the model is used:
+    # ranking dies against others on the SAME wafer.
+    df_w = pd.DataFrame({"w": wid_arr, "bnr": bnr, "y": y.astype(float), "rad": rad})
+    g = df_w.groupby("w")
+    bnr_c = (df_w["bnr"] - g["bnr"].transform("mean")).to_numpy()
+    y_c = (df_w["y"] - g["y"].transform("mean")).to_numpy()
+    rad_c = (df_w["rad"] - g["rad"].transform("mean")).to_numpy()
+
+    def _corr(a, b):
+        sa, sb = a.std(), b.std()
+        return float(np.mean(a * b) / (sa * sb)) if sa > 0 and sb > 0 else float("nan")
+
+    corr_bnr_y_within = _corr(bnr_c, y_c)
+    corr_rad_y_within = _corr(rad_c, y_c)
+
+    # Between-wafer: does a wafer's mean BNR predict its new-failure rate at all?
+    per_w = g.agg(bnr=("bnr", "mean"), y=("y", "mean"))
+    corr_between = float(np.corrcoef(per_w["bnr"], per_w["y"])[0, 1])
 
     # Failure rate by 5x5 bad-neighbour-ratio band -- the GDBN premise, quantified.
     # Fixed edges, not quantiles: most dies have a ratio of exactly 0, so qcut collapses.
@@ -175,21 +201,39 @@ def q3_spatial_parametric_link(split, max_wafers: int = 40) -> tuple[str, dict]:
     hi = by_dec["new_fail_rate_pct"].iloc[-1]
     lift = hi / max(lo, 1e-9)
 
+    strength = ("strong" if abs(corr_bnr_y_within) > 0.15 else
+                "modest" if abs(corr_bnr_y_within) > 0.05 else "weak")
     verdict = (
-        "**YES for spatial, NO for the parametric link -- and both answers matter.**\n\n"
-        "On eligible dies only, the 5x5 bad-neighbour ratio correlates **{:+.3f}** with the "
-        "new-failure label and radial position {:+.3f}. New-failure rate climbs from "
-        "**{:.2f}%** in clean neighbourhoods to **{:.2f}%** where over half the neighbours "
-        "already failed -- a **{:.1f}x lift**. That is the GDBN premise, confirmed on our data.\n\n"
-        "The bad-neighbour ratio to parametric-anomaly correlation is only **{:+.3f}**, i.e. "
-        "effectively zero. So neighbourhood badness does *not* announce itself in a die's own "
-        "parameters: the two channels are **independent sources of evidence**, not redundant "
-        "ones. That is the strongest possible argument for fusing them rather than picking "
-        "one -- and it means spatial features cannot be recovered from the parametrics, so "
-        "they must be built explicitly."
-    ).format(corr_bnr_y, corr_rad_y, lo, hi, lift, corr_bnr_z)
+        "**Mostly NO on both counts -- and the reason matters more than the answer.**\n\n"
+        "**Pooled across wafers, the raw GDBN premise does not hold on this data.** The 5x5 "
+        "bad-neighbour ratio correlates **{:+.3f}** with the new-failure label: effectively "
+        "zero, and if anything the wrong sign. The banded table below is not monotonic "
+        "either. Read at face value, this says neighbourhood context is worthless.\n\n"
+        "**That reading is confounded, but the correction is small.** Centring both "
+        "variables within each wafer before correlating gives **{:+.3f}** -- the sign is now "
+        "right, but the effect is {} in absolute terms. The confounder itself is large: "
+        "between wafers, mean bad-neighbour ratio correlates **{:+.3f}** with the wafer's "
+        "new-failure rate. A wafer's pre-test map and its new-failure rate are close to "
+        "independent by construction, so heavily-patterned wafers carry no more new-failure "
+        "risk -- and their surviving eligible dies are the ones in the clean regions. That "
+        "negative between-wafer term is what drags the pooled correlation below zero.\n\n"
+        "**Consequence for the architecture.** Neighbourhood features are worth building, "
+        "but they are weak on their own and only meaningful *relative to the wafer*. What "
+        "actually carries the spatial information is the wafer-level rate itself, which is "
+        "why the two-stage transductive design is the largest single win in our ablation "
+        "(+0.093 AUC-PR) while the multi-scale neighbourhood factory adds almost nothing "
+        "(+0.005). We would not have predicted that ordering from the literature.\n\n"
+        "Separately, the bad-neighbour ratio to parametric-anomaly correlation is **{:+.3f}**, "
+        "i.e. effectively zero. Neighbourhood badness does *not* announce itself in a die's "
+        "own parameters, so the two channels are **independent sources of evidence** rather "
+        "than redundant ones -- the argument for fusing them, and the reason spatial features "
+        "must be built explicitly rather than hoped for from the parametrics."
+    ).format(corr_bnr_y, corr_bnr_y_within, strength, corr_between, corr_bnr_z)
     return verdict, {"by_decile": by_dec, "corr_bnr_y": corr_bnr_y,
-                     "corr_bnr_z": corr_bnr_z, "corr_rad_y": corr_rad_y, "lift": lift}
+                     "corr_bnr_z": corr_bnr_z, "corr_rad_y": corr_rad_y, "lift": lift,
+                     "corr_bnr_y_within": corr_bnr_y_within,
+                     "corr_rad_y_within": corr_rad_y_within,
+                     "corr_between": corr_between}
 
 
 # ----------------------------------------------------------------------------- Q4
@@ -323,9 +367,10 @@ Top {ntop} most-separable parametrics:
 
 ## What this recon changes about the plan
 
-1. **Spatial features lead** (Q3): the 5x5 bad-neighbour ratio is the strongest single
-   signal available, at a {lift:.1f}x failure-rate lift across its range. Build it exactly as
-   the kit computes it, plus multi-scale 3/5/7/9.
+1. **Neighbourhood features are weak here; the WAFER RATE is the real spatial signal**
+   (Q3): pooled correlation {corr_pool:+.3f}, within-wafer {corr_within:+.3f}. Build the
+   neighbourhood factory, but do not expect much from it -- the ablation confirms it adds
+   +0.005 AUC-PR while estimating the wafer's own rate adds +0.093.
 2. **Pool the 500 parametrics into an explicit anomaly score** (Q5): aggregate
    d = {agg:.2f} versus a median per-feature d of {med:.3f}. Feeding 500 raw weak features
    straight to a tree wastes the signal.
@@ -347,6 +392,7 @@ Top {ntop} most-separable parametrics:
         ntop=len(d5["top"]),
         top_table=d5["top"].to_markdown(index=False),
         lift=d3["lift"], agg=d5["aggregate_d"], med=d5["median_d"],
+        corr_pool=d3["corr_bnr_y"], corr_within=d3["corr_bnr_y_within"],
         allpass=100 - d1["rate"],
     )
 

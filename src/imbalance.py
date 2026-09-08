@@ -62,16 +62,31 @@ def focal_objective(gamma: float = 2.0, alpha: float = 0.75):
     Down-weights easy, confidently-correct examples so gradient budget goes to the
     ambiguous overlap region -- which is precisely where this dataset's failures live
     (the kit marks 65% of them 'marginal').
+
+    Handles BOTH LightGBM calling conventions: the sklearn wrapper passes
+    (y_true, y_pred), the native `lgb.train` passes (y_pred, Dataset). Getting this wrong
+    fails with an opaque type error rather than anything that names the real problem.
     """
-    def obj(y_true, y_pred):
-        p = 1.0 / (1.0 + np.exp(-y_pred))
-        y = y_true
+    def obj(a1, a2):
+        if hasattr(a2, "get_label"):          # native API: (preds, Dataset)
+            raw, y = np.asarray(a1, dtype=float), np.asarray(a2.get_label(), dtype=float)
+        else:                                  # sklearn API: (y_true, y_pred)
+            y, raw = np.asarray(a1, dtype=float), np.asarray(a2, dtype=float)
+
+        p = 1.0 / (1.0 + np.exp(-np.clip(raw, -30, 30)))
         a = np.where(y == 1, alpha, 1 - alpha)
         pt = np.where(y == 1, p, 1 - p)
-        # Standard focal gradient/hessian in logit space.
-        g = a * (1 - pt) ** gamma * (gamma * pt * np.log(np.clip(pt, 1e-9, 1)) + pt - y)
-        h = np.abs(a * (1 - pt) ** gamma * pt * (1 - pt) * (1 + gamma)) + 1e-6
-        return g, h
+        # Sign flips for the negative class -- d(pt)/dz is +p(1-p) for y=1 and -p(1-p)
+        # for y=0. Folding that into a single `(pt - y)` term (the form you find in most
+        # snippets) is correct only for the positive class, and silently inverts the
+        # gradient on every negative example.
+        sign = np.where(y == 1, 1.0, -1.0)
+        log_pt = np.log(np.clip(pt, 1e-9, 1.0))
+
+        g = sign * a * (1 - pt) ** gamma * (gamma * pt * log_pt + pt - 1.0)
+        h = a * (1 - pt) ** (gamma - 1) * pt * (1 - pt) * (
+            gamma * (1 - pt) + (1 + gamma) * pt)
+        return g, np.abs(h) + 1e-6
     return obj
 
 

@@ -138,6 +138,188 @@ def shap_waterfall(explainer, X: pd.DataFrame, row: int,
         return None
 
 
+def block_attention_profile(attention: np.ndarray, blocks_row: np.ndarray,
+                            pred, out: str = "block_attention.png") -> Path:
+    """
+    Interpretability artifact 4 (Model B): where the encoder looked inside one die.
+
+    The attention weights are not a post-hoc explanation -- they ARE the pooling
+    operation, so this plot is exact by construction rather than approximate. Compare
+    that with running SHAP over 2000 raw block dimensions, which is both slow and
+    unstable at this width.
+    """
+    _ensure()
+    n_chunks = len(attention)
+    chunk = len(blocks_row) // n_chunks
+
+    fig, axes = plt.subplots(2, 1, figsize=(11, 6), sharex=True,
+                             gridspec_kw={"height_ratios": [2, 1]})
+
+    axes[0].plot(np.arange(len(blocks_row)), blocks_row, lw=0.4, color="#455a64")
+    axes[0].set_ylabel("block reading")
+    axes[0].set_title(
+        f"Die ({pred.die_y}, {pred.die_x}) -- risk {pred.p_fail:.2f} -- "
+        f"raw block signal and where the model attended", fontsize=10, loc="left")
+
+    centres = (np.arange(n_chunks) + 0.5) * chunk
+    axes[1].bar(centres, attention, width=chunk * 0.9, color="#00838f")
+    axes[1].set_ylabel("attention")
+    axes[1].set_xlabel("block index (0 - %d)" % len(blocks_row))
+
+    # Annotate the hottest region -- this is the sentence said out loud in the demo.
+    top = int(np.argmax(attention))
+    lo, hi = top * chunk, (top + 1) * chunk
+    for ax in axes:
+        ax.axvspan(lo, hi, color="#ffb300", alpha=0.25, zorder=0)
+    axes[1].annotate(f"peak: blocks {lo}-{hi}\n({attention[top]:.1%} of attention)",
+                     xy=(centres[top], attention[top]),
+                     xytext=(centres[top], attention[top] * 1.15),
+                     fontsize=9, ha="center",
+                     arrowprops=dict(arrowstyle="->", lw=1))
+    for ax in axes:
+        ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    path = FIG_DIR / out
+    fig.savefig(path, dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
+def spatial_shap_heatmap(preds: list, shap_spatial: np.ndarray, dies: pd.DataFrame,
+                         wafer_id: str, out: str = "spatial_shap_heatmap.png") -> Path:
+    """
+    Where did NEIGHBOURHOOD context, specifically, drive the decision?
+
+    Risk alone cannot answer that -- a die can be high-risk on its own parametrics. This
+    isolates the spatial family's SHAP contribution and maps it back onto the wafer, so a
+    process engineer sees which regions were judged by their surroundings.
+    """
+    _ensure()
+    w = dies[dies["wafer_id"] == wafer_id]
+    shape = (int(w["die_row"].max()) + 1, int(w["die_col"].max()) + 1)
+
+    sel = [i for i, p in enumerate(preds) if p.wafer_id == wafer_id]
+    grid = np.full(shape, np.nan)
+    for i in sel:
+        grid[preds[i].die_y, preds[i].die_x] = shap_spatial[i]
+
+    fig, ax = plt.subplots(figsize=(6.5, 5.5))
+    lim = np.nanmax(np.abs(grid)) or 1.0
+    im = ax.imshow(grid, cmap="coolwarm", vmin=-lim, vmax=lim, interpolation="nearest")
+    fig.colorbar(im, ax=ax, fraction=0.046, label="spatial-family SHAP (logit)")
+    ax.set_title(f"Spatial contribution to risk -- {wafer_id}\n"
+                 "red = neighbourhood raised risk, blue = lowered it", fontsize=10)
+    ax.set_xticks([]); ax.set_yticks([])
+    fig.tight_layout()
+    path = FIG_DIR / out
+    fig.savefig(path, dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
+def family_importance(model, X: pd.DataFrame, explainer,
+                      out: str = "family_importance.png") -> Path | None:
+    """Global view: mean |SHAP| aggregated by resolution, and the top features within each."""
+    _ensure()
+    from .explain import shap_values_for
+    from .model_a import family_of
+
+    try:
+        sub = X.iloc[np.random.default_rng(0).choice(
+            len(X), size=min(3000, len(X)), replace=False)]
+        sv = shap_values_for(explainer, sub)
+    except Exception as exc:
+        print(f"  !! family importance skipped ({exc})")
+        return None
+
+    cols = list(X.columns)
+    fams = np.array([family_of(c) for c in cols])
+    mean_abs = np.abs(sv).mean(axis=0)
+
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4.6))
+    order = ["die", "spatial", "block"]
+    totals = [mean_abs[fams == f].sum() for f in order]
+    colors = ["#1565c0", "#6a1b9a", "#00838f"]
+    axes[0].bar(order, totals, color=colors)
+    axes[0].set_ylabel("total mean |SHAP|")
+    axes[0].set_title("Global importance by resolution", fontsize=10)
+
+    top = np.argsort(-mean_abs)[:15][::-1]
+    axes[1].barh([cols[i] for i in top], mean_abs[top],
+                 color=[colors[order.index(fams[i])] for i in top])
+    axes[1].set_xlabel("mean |SHAP|")
+    axes[1].set_title("Top 15 features (coloured by resolution)", fontsize=10)
+    axes[1].tick_params(axis="y", labelsize=8)
+
+    for a in axes:
+        a.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    path = FIG_DIR / out
+    fig.savefig(path, dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
+def calibration_plot(y: np.ndarray, p: np.ndarray, n_bins: int = 12,
+                     out: str = "calibration.png") -> Path:
+    """Reliability diagram: are the probabilities honest, or merely well-ranked?"""
+    _ensure()
+    from sklearn.calibration import calibration_curve
+    from sklearn.metrics import brier_score_loss
+
+    fig, ax = plt.subplots(figsize=(6, 5.5))
+    frac, mean_pred = calibration_curve(y, p, n_bins=n_bins, strategy="quantile")
+    ax.plot([0, 1], [0, 1], "--", color="grey", lw=1, label="perfectly calibrated")
+    ax.plot(mean_pred, frac, "o-", color="#1565c0", lw=2,
+            label=f"model (Brier {brier_score_loss(y, p):.4f})")
+    ax.set_xlabel("mean predicted probability")
+    ax.set_ylabel("observed failure fraction")
+    ax.set_title("Reliability diagram", fontsize=11)
+    ax.legend(fontsize=9)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    path = FIG_DIR / out
+    fig.savefig(path, dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
+def yield_escape_curve(y: np.ndarray, p: np.ndarray, chosen_threshold: float,
+                       out: str = "yield_escape.png") -> Path:
+    """
+    The economics slide: yield loss against escaped failures as the threshold slides.
+
+    The costs are asymmetric -- a false accept becomes a field failure and an RMA, a
+    false reject is pure yield loss -- so the operating point is a business decision, not
+    a statistical one. Marking our chosen point on this curve is how we justify it.
+    """
+    _ensure()
+    ths = np.quantile(p, np.linspace(0.50, 0.9995, 220))
+    loss, escaped = [], []
+    for t in ths:
+        flag = p >= t
+        loss.append(100 * flag.mean())
+        escaped.append(100 * (y & ~flag).sum() / max(y.sum(), 1))
+
+    fig, ax = plt.subplots(figsize=(7, 5.5))
+    ax.plot(loss, escaped, lw=2, color="#c62828")
+    flag = p >= chosen_threshold
+    ax.scatter([100 * flag.mean()],
+               [100 * (y & ~flag).sum() / max(y.sum(), 1)],
+               s=110, zorder=5, color="#1565c0", edgecolor="white",
+               label=f"our operating point (thr={chosen_threshold:.3f})")
+    ax.set_xlabel("yield loss  (% of dies screened)")
+    ax.set_ylabel("escapes  (% of true failures shipped)")
+    ax.set_title("Yield loss vs escaped failures", fontsize=11)
+    ax.legend(fontsize=9)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    path = FIG_DIR / out
+    fig.savefig(path, dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
 def pr_curves(curves: dict, out: str = "pr_curves.png") -> Path:
     """Precision-recall curves for every model and baseline on one axis."""
     _ensure()

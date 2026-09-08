@@ -16,6 +16,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 import time
 from pathlib import Path
@@ -48,6 +49,7 @@ def ingest_split(src: Path, split: str, out_dir: Path, batch_size: int = 4096) -
     has_blocks = "block_readings" in all_cols
     die_cols = [c for c in all_cols if c != "block_readings"]
     feature_cols = [c for c in die_cols if c.startswith("feature_")]
+    n_features = len(feature_cols)
 
     # ---- die table (everything but the block string) ----
     dies = pq.read_table(src, columns=die_cols).to_pandas()
@@ -61,13 +63,25 @@ def ingest_split(src: Path, split: str, out_dir: Path, batch_size: int = 4096) -
 
     dies_path = out_dir / f"{split}_dies.parquet"
     dies.to_parquet(dies_path, index=False)
+    n_wafers = int(dies["wafer_id"].nunique())
+
+    # Release the die frame before touching blocks. The kit writes ONE row group, so the
+    # block column can only be decoded whole (~14 KB of text per die); holding a 500-column
+    # frame alongside it is what pushed this into swap on a 16 GB machine.
+    del dies
+    gc.collect()
 
     # ---- block memmap ----
     k = 0
     blocks_path = None
     if has_blocks:
-        first = next(pf.iter_batches(batch_size=1, columns=["block_readings"]))
-        k = len(first.column(0)[0].as_py().split())
+        # STREAM the block column. `read_table` would materialise all ~2.3 GB of decoded
+        # strings for the train split at once and OOM a 16 GB machine; iter_batches
+        # decodes incrementally even though the kit writes a single row group.
+        probe = next(pq.ParquetFile(src).iter_batches(
+            batch_size=1, columns=["block_readings"]))
+        k = len(probe.column(0)[0].as_py().split())
+        del probe
 
         blocks_path = out_dir / f"{split}_blocks.f16.npy"
         mm = np.lib.format.open_memmap(
@@ -78,23 +92,26 @@ def ingest_split(src: Path, split: str, out_dir: Path, batch_size: int = 4096) -
             batch_size=batch_size, columns=["block_readings"]
         ):
             strings = batch.column(0).to_pylist()
-            arr = _parse_batch(strings, k)
-            mm[written:written + len(strings)] = arr.astype(np.float16)
+            mm[written:written + len(strings)] = _parse_batch(strings, k).astype(np.float16)
             written += len(strings)
-            print(f"    {split}: blocks {written:,}/{n_rows:,}", end="\r")
+            del strings, batch
+            if written % (batch_size * 8) == 0:
+                gc.collect()
+            print(f"    {split}: blocks {written:,}/{n_rows:,}", end="\r", flush=True)
         assert written == n_rows, f"wrote {written} block rows, expected {n_rows}"
         mm.flush()
         del mm
+        gc.collect()
         print()
 
     manifest = {
         "split": split,
         "source": str(src),
         "n_rows": int(n_rows),
-        "n_wafers": int(dies["wafer_id"].nunique()),
-        "n_features": len(feature_cols),
+        "n_wafers": n_wafers,
+        "n_features": n_features,
         "n_blocks": int(k),
-        "has_label": "label" in dies.columns,
+        "has_label": "label" in die_cols,
         "dies_path": str(dies_path),
         "blocks_path": str(blocks_path) if blocks_path else None,
         "seconds": round(time.time() - t0, 1),
@@ -108,6 +125,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Materialise generated parquet into a fast cache")
     ap.add_argument("--dataset", default="smoke", choices=["smoke", "full"])
     ap.add_argument("--src-dir", default=None)
+    ap.add_argument("--split", default=None,
+                    help="ingest only this split (runs each in its own process)")
     args = ap.parse_args()
 
     src_dir = Path(args.src_dir or f"data/generated/{args.dataset}")
@@ -115,7 +134,10 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     manifests = {}
-    for split in ("train", "test", "validation"):
+    wanted = [args.split] if args.split else ["train", "test", "validation"]
+    if args.split and (out_dir / "manifest.json").exists():
+        manifests = json.loads((out_dir / "manifest.json").read_text(encoding="utf-8"))
+    for split in wanted:
         src = src_dir / f"{split}.parquet"
         if not src.exists():
             print(f"  {split}: MISSING at {src} -- skipped")
