@@ -141,21 +141,31 @@ Total **+21.7%**. Two results here went against our going-in expectations: the s
 factory we thought would carry the model made it slightly worse, and the wafer prior we
 added as an afterthought was the largest single win. Both are reported as measured.
 
-### Pooling vs a learned encoder — the architecture lost
+### Pooling vs a learned encoder — a near-tie, and we ship the simpler one
 
-We built the gated attention-MIL encoder (the "creative fusion" idea) and then measured it
-against plain statistical pooling on identical splits and features:
+We built the gated attention-MIL encoder (the "creative fusion" idea) and measured it
+against plain statistical pooling on identical splits, features and eligible dies:
 
-| architecture | AUC-PR | F1 |
-|---|---|---|
-| statistical pooling (25 features) | **0.5859** | 0.5491 |
-| gated attention-MIL, late fusion | 0.5483 | 0.5102 |
+| architecture | AUC-PR | F1 | precision |
+|---|---|---|---|
+| statistical pooling (25 features) | **0.5859** | **0.5491** | 0.8620 |
+| gated attention-MIL, late fusion | 0.5801 | 0.5302 | 0.9243 |
 
-**Pooling won by 0.038.** We ship pooling and report the finding — the PS asks for
-improvement *or lack thereof*, and that applies to our own architecture too. The MIL branch
-is retained because its attention weights give Model B a block interpretability artifact
-pooling cannot provide (`figures/block_attention.png`), and that figure states its own
-uniform baseline so the concentration is not oversold.
+**Pooling wins by 0.0058 — close enough to call a tie on ranking.** We ship pooling
+because it is simpler, ~40× faster to train on a CPU, deterministic, and needs no
+early-stopping discipline. That is a deployment argument, not an accuracy one, and it is
+the honest way to state it.
+
+*This number moved after a bug fix.* Before we corrected the train-matrix mismatch
+described below, MIL scored 0.5481 and pooling appeared to win by 0.038. The MIL's
+tabular branch was being handicapped by the same defect. Re-measuring after the fix
+turned a comfortable win into a near-tie — a good argument for re-running every
+comparison after any change to shared plumbing.
+
+The MIL branch is retained because its attention weights give Model B a block
+interpretability artifact pooling cannot provide (`figures/block_attention.png`), and
+that figure draws its own uniform-attention baseline so a 1.9%-vs-1.0% peak cannot be
+mistaken for sharp concentration.
 
 ### Things we tried that did not work
 

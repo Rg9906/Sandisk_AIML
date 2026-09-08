@@ -92,12 +92,33 @@ our modelling choices rather than the data — and the question would go unanswe
 | AUC-PR | 0.551 | 0.586 | **+0.035** |
 | F1 (fail) | 0.529 | 0.550 | +0.021 |
 
-**Yes — block-level data helps**, and we can say why: the readings are **ordered** (lag-1
-autocorrelation 0.248 vs a 0.000 shuffled control) and the defect signal is a *contiguous
-cluster*, so run-length and hot-cluster shape features have something real to lock onto.
+**Yes — block-level data helps.** But the interesting part is *how little it takes*:
 
-*Tier 1 vs Tier 2 (attention-MIL) verdict: see `results/comparison.md` — report whichever
-won, and say plainly if pooling beat the learned encoder.*
+> **The 2000 block readings reduce to one number.** A single feature — the mean of the
+> 2000 readings — captures **98%** of the entire block gain (0.5852 of 0.5859).
+
+We did not assume that. We went looking for something better and failed, four times:
+
+| attempt | Cohen's d | why it lost |
+|---|---|---|
+| plain mean | **0.69** | — |
+| matched filter (sliding-window max) | 0.13 | max over ~2000 positions inflates the null more than it gains signal |
+| mean − median | 0.06 | 5% contamination at 0.47σ shifts the whole distribution, it does not make a tail |
+| tail-mass / soft-threshold | 0.10–0.21 | same reason |
+| **gated attention-MIL** | — | **0.5801 vs pooling's 0.5859 — a near-tie** |
+
+> **Say this:** "We built the fancy attention architecture. It tied with taking an
+> average. We shipped the average — it is simpler, 40x faster on a CPU, and
+> deterministic — and kept the attention weights only for the picture they draw."
+
+*Be precise if pushed:* the gap is 0.0058 AUC-PR, which we would not defend as a real
+difference in ranking quality. The ship decision is on engineering grounds, not accuracy.
+It is also a number that MOVED: before we fixed a train-matrix bug the MIL scored 0.5481
+and pooling looked like a comfortable 0.038 winner. The bug was handicapping the MIL.
+
+*Why the mean is right, in one line:* the defect adds a **fixed total mass** across the
+blocks, so the sum — the mean — is the sufficient statistic. Every cleverer detector
+throws information away.
 
 ---
 
@@ -125,14 +146,28 @@ won, and say plainly if pooling beat the learned encoder.*
 
 We climbed the standard ladder and measured after every rung (`imbalance_analysis.md`).
 
-- **Threshold tuning is the biggest lever and it is free** — same model, same ranking,
-  only the cut point moves.
-- **Class weighting trades precision for recall; it adds no information.**
-- **Per-wafer adaptive weighting did not help** — we expected it to. Likely because the
-  wafer-prior features already give the model the per-wafer rate directly.
+| rung | AUC-PR | F1 |
+|---|---|---|
+| no weighting, threshold 0.5 | 0.5849 | 0.5347 |
+| class_weight balanced, threshold 0.5 | 0.5859 | 0.4230 |
+| balanced + **tuned threshold** | 0.5859 | **0.5491** |
+| per-wafer adaptive weights | 0.5729 | 0.5407 |
+| **focal loss (γ=2)** | **0.5880** | **0.5492** |
+| SMOTE | 0.5607 | 0.5177 |
+
+- **Threshold tuning is the biggest lever and it is free** — identical model, identical
+  AUC-PR, F1 moves 0.4230 → 0.5491. Ranking was never the problem; the 0.5 cut point was.
+- **Class weighting trades precision for recall; it adds no information** — it relabels
+  the same ranking.
+- **Per-wafer adaptive weighting did not help** — we expected it to. The wafer-prior
+  features already hand the model the per-wafer rate, so re-encoding it in sample weights
+  is redundant.
 - **SMOTE hurt, as predicted.** With a median Cohen's d of 0.134, interpolating between
   failures lands synthetic points inside the pass distribution. You cannot resolve an
   overlap by manufacturing more points inside it.
+- **Hyper-parameter tuning was worth +0.0026 — noise.** 40 Optuna trials on AUC-PR, run
+  last and timeboxed. Feature and design choices moved the metric 6–10× more. Worth saying
+  out loud: the win here was never in the hyper-parameters.
 
 Show `figures/class_overlap.png` — even the six *most separable* of 500 parametrics
 overlap almost completely.
@@ -186,5 +221,21 @@ kept the factory because the root-cause classifier and spatial SHAP heatmap depe
 features, and reported the cost.
 
 **"Reproducible?"**
-Seeds fixed everywhere; two consecutive runs produce identical metrics. Every run ever
-made is in `results/results.csv`. One command regenerates every figure and table.
+Seeds fixed everywhere; two consecutive runs produce identical metrics to 10 decimal
+places. Every run ever made is in `results/results.csv`. One command regenerates every
+figure and table.
+
+**"Did you find any bugs in your own work?"** *(A good question to invite — the answer
+is a credibility slide, not a liability.)*
+Three, all found by measurement rather than by reading code:
+1. **Focal loss scored 0.026 — below the 0.042 base rate.** The `(pt − y)` gradient form
+   in most published snippets is correct only for the positive class and silently inverts
+   on negatives. Once fixed it became the best rung in the ladder.
+2. **Venn-ABERS intervals were degenerate.** Textbook-correct, but width shrinks as O(1/n),
+   so on 36k calibration dies they collapsed to 0.001 wide with 10% band coverage. We
+   measured them, rejected them, and shipped a bootstrap interval at 90% coverage.
+3. **A train-matrix mismatch the hyper-parameter search exposed.** Optuna reported a best
+   validation score *worse* than the defaults we had seeded as trial 0 — impossible unless
+   the matrices differed. They did: the wafer-prior columns were being rebuilt in-sample
+   for re-training consumers. Fixing it made the imbalance ladder reproduce Model B's
+   0.5859 exactly, which it had not done before.

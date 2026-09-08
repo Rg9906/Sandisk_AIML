@@ -14,7 +14,7 @@ new failures (4.23%).*
 | GDBN (5x5) | 0.0536 | 0.0688 | 0.0696 | 0.0680 | 0.9202 |
 | Model A (die+spatial) | 0.5476 | 0.5214 | 0.4413 | 0.6370 | 0.9657 |
 | Model B (pooling) | 0.5859 | 0.5491 | 0.4029 | 0.8620 | 0.9720 |
-| Model B (attention-MIL) | 0.5483 | 0.5102 | 0.3442 | 0.9855 | 0.9720 |
+| Model B (attention-MIL) | 0.5801 | 0.5302 | 0.3717 | 0.9243 | 0.9721 |
 
 > **Read AUC-PR, not accuracy.** The all-pass row scores
 > 95.8% accuracy while catching zero failures.
@@ -37,9 +37,9 @@ feature columns, so this delta measures the *data*, not two modelling choices.
 | architecture | AUC-PR | F1 |
 |---|---|---|
 | statistical pooling (25 features) | 0.5859 | 0.5491 |
-| gated attention-MIL, late fusion | 0.5483 | 0.5102 |
+| gated attention-MIL, late fusion | 0.5801 | 0.5302 |
 
-**Winner: statistical pooling** (0.0376 AUC-PR).
+**Winner: statistical pooling** (0.0058 AUC-PR).
 We tested a learned encoder against statistical pooling and pooling won. That is a real finding, not a failure -- the PS asks for improvement *or lack thereof*. The MIL branch is retained for its attention weights, which give Model B a block interpretability artifact that pooling cannot provide.
 
 ## Versus the incumbent
