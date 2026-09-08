@@ -62,10 +62,14 @@ def wafer_heatmap(preds: list, dies: pd.DataFrame, wafer_id: str,
 
     if len(pdf):
         risk = _grid_from(pdf, "p_fail", shape)
-        im = axes[1].imshow(risk, cmap=CMAP_RISK, vmin=0, vmax=max(0.2, np.nanmax(risk)),
+        # Dies we do not score (pre-test failures, and empty grid cells) are NaN. Left
+        # alone matplotlib paints them white, which on an `inferno` ramp is exactly what
+        # maximum risk looks like -- the opposite of the truth, on the demo's key figure.
+        cmap_risk = matplotlib.colormaps[CMAP_RISK].with_extremes(bad="#c8c8c8")
+        im = axes[1].imshow(risk, cmap=cmap_risk, vmin=0, vmax=max(0.2, np.nanmax(risk)),
                             interpolation="nearest")
         fig.colorbar(im, ax=axes[1], fraction=0.046)
-        axes[1].set_title("Predicted risk\n(eligible dies only)")
+        axes[1].set_title("Predicted risk\n(grey = not scored: pre-test fail or no die)")
 
         # Panel 3 -- truth, with the same colour semantics as panel 1 plus new fails.
         post = pre.copy()
@@ -171,11 +175,20 @@ def block_attention_profile(attention: np.ndarray, blocks_row: np.ndarray,
     lo, hi = top * chunk, (top + 1) * chunk
     for ax in axes:
         ax.axvspan(lo, hi, color="#ffb300", alpha=0.25, zorder=0)
-    axes[1].annotate(f"peak: blocks {lo}-{hi}\n({attention[top]:.1%} of attention)",
-                     xy=(centres[top], attention[top]),
-                     xytext=(centres[top], attention[top] * 1.15),
-                     fontsize=9, ha="center",
-                     arrowprops=dict(arrowstyle="->", lw=1))
+    # State the uniform baseline explicitly. Attention plots invite the reader to see
+    # concentration that is not there; 1.9% against a 1.0% uniform floor is a mild
+    # preference, not a smoking gun, and the figure should say so itself.
+    uniform = 1.0 / n_chunks
+    axes[1].axhline(uniform, ls="--", lw=1, color="#b71c1c",
+                    label=f"uniform attention ({uniform:.1%})")
+    axes[1].legend(fontsize=8, loc="upper right")
+    axes[1].annotate(
+        f"peak: blocks {lo}-{hi}\n{attention[top]:.1%} vs {uniform:.1%} uniform "
+        f"({attention[top] / uniform:.1f}x)",
+        xy=(centres[top], attention[top]),
+        xytext=(centres[top], attention[top] * 1.15),
+        fontsize=9, ha="center",
+        arrowprops=dict(arrowstyle="->", lw=1))
     for ax in axes:
         ax.spines[["top", "right"]].set_visible(False)
     fig.tight_layout()

@@ -141,6 +141,34 @@ Total **+21.7%**. Two results here went against our going-in expectations: the s
 factory we thought would carry the model made it slightly worse, and the wafer prior we
 added as an afterthought was the largest single win. Both are reported as measured.
 
+### Pooling vs a learned encoder — the architecture lost
+
+We built the gated attention-MIL encoder (the "creative fusion" idea) and then measured it
+against plain statistical pooling on identical splits and features:
+
+| architecture | AUC-PR | F1 |
+|---|---|---|
+| statistical pooling (25 features) | **0.5859** | 0.5491 |
+| gated attention-MIL, late fusion | 0.5483 | 0.5102 |
+
+**Pooling won by 0.038.** We ship pooling and report the finding — the PS asks for
+improvement *or lack thereof*, and that applies to our own architecture too. The MIL branch
+is retained because its attention weights give Model B a block interpretability artifact
+pooling cannot provide (`figures/block_attention.png`), and that figure states its own
+uniform baseline so the concentration is not oversold.
+
+### Deployment-grade extras
+
+- **Calibration.** Isotonic on a held-out calibration split: Brier **0.0576 → 0.0244**,
+  expected calibration error **0.1254 → 0.0027**.
+- **Per-die uncertainty.** We implemented Venn-ABERS first, then measured it and **rejected
+  it**: its width shrinks as O(1/n), so on a 36k-die calibration set it collapses to 0.0013
+  wide and brackets the observed rate in only 10% of risk bands. A bootstrap over the
+  calibration set gives width 0.011 and **90% band coverage**. Both are reported.
+- **Economics.** At an equal ~25% yield-loss budget, WaferLens catches **83%** of true
+  failures (17% escape) against GDBN's **30%** (70% escape). The dashboard exposes the
+  cost ratio as a live slider.
+
 ---
 
 ## Design decisions worth defending

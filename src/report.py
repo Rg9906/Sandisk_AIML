@@ -20,12 +20,36 @@ from . import baselines, economics, figures
 from .calibrate import (bootstrap_interval, calibration_report, coverage,
                         isotonic_calibrator, venn_abers)
 from .explain import enrich_with_root_cause, explain_die, make_explainer, shap_values_for
-from .io_data import load_all
-from .metrics import compute_metrics, confusion_table, markdown_table
+from .io_data import load_all, load_split
+from .metrics import compute_metrics, confusion_table, log_run, markdown_table
 from .model_a import family_of
 from .model_b import compare_block_encoders
 
 OUT = Path("results")
+
+
+def write_submission(model, dataset: str, threshold: float) -> Path:
+    """
+    The hackathon's required prediction file.
+
+    Format per the kit README: one row per die INCLUDING pre-test failures, which are
+    forced to 1 -- they trivially remain failed and are not ours to predict.
+    """
+    val = load_split(dataset, "validation")
+    p = model.predict_proba(val)
+    pred = (p >= threshold).astype(int)
+    pred[val.dies["old_label"].to_numpy() == 1] = 1
+
+    out = pd.DataFrame({
+        "wafer_id": val.dies["wafer_id"].astype(str),
+        "die_row": val.dies["die_row"].astype(int),
+        "die_col": val.dies["die_col"].astype(int),
+        "predicted_label": pred.astype(int),
+    })
+    path = OUT / "submission.csv"
+    out.to_csv(path, index=False)
+    print(f"  wrote {path}  ({len(out):,} rows, {int(pred.sum()):,} predicted fails)")
+    return path
 
 
 def main() -> None:
@@ -68,6 +92,8 @@ def main() -> None:
         base_rows.append({"model": name, **{k: m[k] for k in
                           ("auc_pr", "f1", "recall", "precision", "accuracy")}})
         curves[name] = (y_te, p)
+        log_run(wave=3, model=f"baseline/{name}", features_version="n/a", metrics=m,
+                n_train=0, n_test=len(y_te), notes="incumbent baseline")
         print(f"    {name:16s} AUC-PR={m['auc_pr']:.4f}")
 
     m_a = None
@@ -267,6 +293,11 @@ Head-to-head at each method's own cost-optimal threshold (cost ratio 100):
 {confusion_table(y_te, (p_best >= thr_best).astype(int))}
 """
     (OUT / "comparison.md").write_text(doc, encoding="utf-8")
+
+    # The required prediction file, regenerated from the SHIPPED model. Without this the
+    # deliverable silently keeps whatever an earlier run left behind -- which is exactly
+    # what our verification gate caught.
+    write_submission(pooling, args.dataset, thr_best)
 
     with (OUT / f"preds_{args.dataset}.pkl").open("wb") as fh:
         pickle.dump({"preds": preds,

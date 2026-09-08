@@ -176,6 +176,42 @@ def main() -> None:
             "actionable one."
         )
 
+    # ---------------------------------------------------------------- economics
+    st.divider()
+    st.subheader("Where should the threshold go?")
+    st.caption("The operating point is a business decision, not a statistical one. "
+               "A false accept becomes a field failure and an RMA; a false reject is pure "
+               "yield loss. F1 implicitly assumes those cost the same — they never do.")
+
+    scored = pdf_all[pdf_all["y_true"] >= 0]
+    if len(scored):
+        y = scored["y_true"].to_numpy()
+        p = scored["p_fail"].to_numpy()
+
+        ratio = st.slider(
+            "Cost of one field failure, in units of one die",
+            min_value=5, max_value=1000, value=100, step=5,
+            help="Automotive and datacentre parts sit in the hundreds or thousands; "
+                 "consumer parts far lower.",
+        )
+        cap = st.slider("Maximum acceptable yield loss (%)", 1, 50, 25, 1)
+
+        from src.economics import optimal_threshold
+        opt = optimal_threshold(y, p, float(ratio), float(cap))
+
+        c = st.columns(4)
+        c[0].metric("Optimal threshold", f"{opt['threshold']:.3f}")
+        c[1].metric("Yield loss", f"{opt['yield_loss_pct']:.1f}%")
+        c[2].metric("Failures caught", f"{opt['recall']:.1%}")
+        c[3].metric("Escapes", f"{opt['escape_rate_pct']:.1f}%")
+
+        st.caption(
+            f"At a cost ratio of {ratio}:1, screening at {opt['threshold']:.3f} catches "
+            f"{opt['recall']:.0%} of true failures for {opt['yield_loss_pct']:.1f}% yield "
+            f"loss — **{opt['savings_pct']:.0f}% cheaper** than shipping everything and "
+            f"absorbing the field failures."
+        )
+
 
 def _to_image(arr: np.ndarray, cmap: str) -> np.ndarray:
     """Render a NaN-aware grid to an RGB array without pulling in a plotting backend."""
