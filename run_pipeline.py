@@ -46,8 +46,10 @@ def set_seeds(seed: int = SEED) -> None:
 def versions_for(wave: int) -> dict:
     """Feature-set versions per wave. Wave 1 is deliberately trivial."""
     if wave <= 1:
-        return {"die_version": "v1", "spatial_version": "v1", "block_version": "v1"}
-    return {"die_version": "v2", "spatial_version": "v2", "block_version": "v2"}
+        return {"die_version": "v1", "spatial_version": "v1", "block_version": "v1",
+                "two_stage": False}
+    return {"die_version": "v2", "spatial_version": "v2", "block_version": "v2",
+            "two_stage": True}
 
 
 def run_baselines(train, val, test) -> tuple[list[dict], dict]:
@@ -56,7 +58,7 @@ def run_baselines(train, val, test) -> tuple[list[dict], dict]:
     el_te, y_te = test.eligible, test.y()[test.eligible]
     el_va, y_va = val.eligible, val.y()[val.eligible]
 
-    for name, fn in (("all-pass", baselines.all_pass), ("GDBN (5x5)", baselines.gdbn)):
+    for name, fn in baselines.ALL_BASELINES.items():
         p_va = fn(val)[el_va]
         p_te = fn(test)[el_te]
         # All-pass has no usable curve; give it a threshold above its constant score.
@@ -89,7 +91,7 @@ def run_model(kind: str, wave: int, train, val, test, *, explain: bool) -> dict:
 
     explainer = make_explainer(model) if explain else None
     preds = model.predict(test, explainer=explainer)
-    X_te = model.build_features(test).X[model.columns_]
+    X_te = model.design_matrix(test)
     enrich_with_root_cause(preds, X_te, np.flatnonzero(el_te))
     validate_predictions(preds)
 
@@ -226,6 +228,19 @@ def main() -> int:
     best = b or a
     if best is not None:
         write_submission(best["_obj"], args.dataset)
+
+        # Cache predictions so the dashboard starts instantly and trains nothing.
+        import pickle
+        cache = Path(f"results/preds_{args.dataset}.pkl")
+        with cache.open("wb") as fh:
+            pickle.dump({
+                "preds": best["_preds"],
+                "metrics": {k: best[k] for k in
+                            ("auc_pr", "f1", "recall", "precision", "accuracy")}
+                           | {"threshold": best["_obj"].threshold_},
+                "model": best["model"], "wave": args.wave,
+            }, fh)
+        print(f"  wrote {cache} (dashboard cache)")
 
     if args.report and best is not None:
         preds = best["_preds"]

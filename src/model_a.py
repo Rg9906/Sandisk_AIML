@@ -48,22 +48,64 @@ class FeatureBundle:
         self.families = {c: family_of(c) for c in self.X.columns}
 
 
+# ------------------------------------------------------- transductive wafer prior
+WAFER_AGG_COLS = ["sp_wprior_mean", "sp_wprior_p90", "sp_wprior_max",
+                  "sp_wprior_std", "sp_wprior_frac_hi", "sp_wprior_n"]
+
+
+def wafer_aggregates(dies: pd.DataFrame, scores: np.ndarray,
+                     eligible: np.ndarray) -> pd.DataFrame:
+    """
+    Summarise a wafer's stage-1 risk scores and broadcast them back to its dies.
+
+    WHY THIS EXISTS. The generator draws each wafer's new-failure rate from an
+    exponential distribution -- a per-wafer latent that no single die's features reveal,
+    and which dominates the label variance. It looks irreducible.
+
+    It is not, because prediction is transductive: at inference we hold the WHOLE wafer,
+    not one die at a time. A wafer with a high latent rate has many dies scoring high, so
+    the wafer's own score distribution estimates the latent that generated it. Stage 2
+    then asks a different question of each die: "is this die risky *relative to the
+    wafer it sits on*", which is the question a fab actually asks.
+
+    Uses no labels and no cross-wafer statistics -- only test-time inputs. Aggregates are
+    computed over ELIGIBLE dies only, since pre-test failures are not scored.
+    """
+    out = pd.DataFrame(np.zeros((len(dies), len(WAFER_AGG_COLS)), dtype=np.float32),
+                       columns=WAFER_AGG_COLS)
+    hi = float(np.quantile(scores[eligible], 0.9)) if eligible.any() else 0.0
+
+    for _, w in dies.groupby("wafer_id", sort=False, observed=True):
+        rows = w.index.to_numpy()
+        el_rows = rows[eligible[rows]]
+        s = scores[el_rows] if len(el_rows) else np.zeros(1, dtype=np.float32)
+        out.iloc[rows] = np.array([
+            s.mean(), np.percentile(s, 90), s.max(), s.std(),
+            float((s > hi).mean()), float(len(el_rows)),
+        ], dtype=np.float32)
+    return out
+
+
 class WaferLensModel:
     """LightGBM over die + spatial (+ optionally block) features."""
 
     def __init__(self, *, use_blocks: bool, wave: int = 1,
                  die_version: str = "v1", spatial_version: str = "v1",
-                 block_version: str = "v1", params: dict | None = None):
+                 block_version: str = "v1", params: dict | None = None,
+                 two_stage: bool = False):
         self.use_blocks = use_blocks
         self.wave = wave
         self.die_version = die_version
         self.spatial_version = spatial_version
         self.block_version = block_version
+        self.two_stage = two_stage
         self.name = "B" if use_blocks else "A"
 
         self.die_fx = DieFeaturizer(die_version)
         self.block_fx = BlockFeaturizer(block_version) if use_blocks else None
         self.clf: LGBMClassifier | None = None
+        self.stage1_: LGBMClassifier | None = None
+        self.stage1_columns_: list[str] = []
         self.threshold_: float = float("nan")
         self.columns_: list[str] = []
 
@@ -113,7 +155,12 @@ class WaferLensModel:
         assert_eligible_only(y_tr, train.dies["old_label"].to_numpy()[el_tr], "model.fit/train")
 
         bundle = self.build_features(train, fit=True, y=y_tr)
-        X_tr = bundle.X.loc[el_tr].reset_index(drop=True)
+        X_all = bundle.X
+
+        if self.two_stage:
+            X_all = self._fit_stage1(train, X_all, y_tr, el_tr)
+
+        X_tr = X_all.loc[el_tr].reset_index(drop=True)
         self.columns_ = list(X_tr.columns)
 
         self.clf = LGBMClassifier(**self.params)
@@ -127,12 +174,61 @@ class WaferLensModel:
         self.threshold_, _ = tune_threshold(y_va, p_va)
         return self
 
+    # ----------------------------------------------------------------- stage 1
+    def _fit_stage1(self, train: Split, X_all: pd.DataFrame,
+                    y_tr: np.ndarray, el_tr: np.ndarray) -> pd.DataFrame:
+        """
+        Fit the stage-1 die scorer and append this wafer's transductive prior features.
+
+        Train rows get CROSS-FITTED scores, folded BY WAFER. Using in-sample stage-1
+        scores would make the wafer aggregate look far sharper on train than it can ever
+        be at test time, and stage 2 would learn to trust it accordingly -- the classic
+        stacking leak.
+        """
+        self.stage1_columns_ = list(X_all.columns)
+        X_el = X_all.loc[el_tr].reset_index(drop=True)
+
+        wafers = train.dies.loc[el_tr, "wafer_id"].to_numpy()
+        uniq = np.unique(wafers)
+        fold_of = {w: i % 5 for i, w in enumerate(uniq)}
+        folds = np.array([fold_of[w] for w in wafers])
+
+        oof = np.zeros(len(train.dies), dtype=np.float32)
+        el_idx = np.flatnonzero(el_tr)
+        for f in range(5):
+            tr_m, te_m = folds != f, folds == f
+            if te_m.sum() == 0 or len(np.unique(y_tr[tr_m])) < 2:
+                continue
+            m = LGBMClassifier(**self.params).fit(X_el[tr_m], y_tr[tr_m])
+            oof[el_idx[te_m]] = m.predict_proba(X_el[te_m])[:, 1]
+
+        # Full fit for inference on unseen wafers.
+        self.stage1_ = LGBMClassifier(**self.params).fit(X_el, y_tr)
+
+        W = wafer_aggregates(train.dies.reset_index(drop=True), oof, el_tr)
+        return pd.concat([X_all.reset_index(drop=True), W], axis=1)
+
+    def _apply_stage1(self, split: Split, X_all: pd.DataFrame) -> pd.DataFrame:
+        """Score a split with stage 1 and append its wafer-prior features."""
+        p1 = self.stage1_.predict_proba(X_all[self.stage1_columns_])[:, 1]
+        W = wafer_aggregates(split.dies.reset_index(drop=True), p1, split.eligible)
+        return pd.concat([X_all.reset_index(drop=True), W], axis=1)
+
     # ------------------------------------------------------------------ predict
     def predict_proba(self, split: Split) -> np.ndarray:
         """Failure probability for EVERY die in the split (eligible or not)."""
         assert self.clf is not None, "model is not fitted"
-        X = self.build_features(split).X[self.columns_]
-        return self.clf.predict_proba(X)[:, 1]
+        X = self.build_features(split).X
+        if self.two_stage:
+            X = self._apply_stage1(split, X)
+        return self.clf.predict_proba(X[self.columns_])[:, 1]
+
+    def design_matrix(self, split: Split) -> pd.DataFrame:
+        """The exact matrix the final model consumes -- used by the explainer."""
+        X = self.build_features(split).X
+        if self.two_stage:
+            X = self._apply_stage1(split, X)
+        return X[self.columns_]
 
     def predict(self, split: Split, explainer=None) -> list[DiePrediction]:
         """
@@ -148,7 +244,7 @@ class WaferLensModel:
         dies = split.dies
         has_y = "label" in dies.columns
 
-        X = self.build_features(split).X[self.columns_]
+        X = self.design_matrix(split)
         attribs, tops = attribute(self, X, el, explainer=explainer)
 
         preds = []
