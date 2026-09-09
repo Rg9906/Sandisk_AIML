@@ -1,0 +1,66 @@
+Die Yield Prediction 
+ 
+Problem Statement
+Multi-Resolution Die Yield Prediction with Interpretable Spatial Context
+ 
+Background
+In semiconductor manufacturing, each wafer contains thousands of dies arranged in a grid. Each die undergoes electrical testing that produces multiple parametric measurements. Additionally, each die contains internal blocks that produce sub-die-level test readings — a high-dimensional signal that captures fine-grained process variation within the die. However, dies don't fail in isolation — failures are often influenced by neighbourhood effects (nearby defective dies), wafer-level process gradients (radial/linear variations from the chamber), and patterns hidden within block-level test readings.
+ 
+Objective
+Build two models and compare their performance:
+
+Model A — Die-Level Only Predict per-die pass/fail probability using:
+•	Die-level features (n parametric test measurements per die)
+•	Spatial context (neighborhood pattern in the surrounding m×m window, derived from die positions)
+
+Model B — Die + Block-Level Predict per-die pass/fail probability using everything in Model A, plus:
+•	Block-level readings (a dense array of k test readings per die, capturing sub-die process variation)
+
+The goal is to demonstrate whether and how much the high-dimensional block-level signal improves prediction over die-level features alone.
+
+Sample Wafer Map Visualization
+Below is an example wafer showing pre-test state, post-test state, and newly failed dies:
+•	Green: Passing dies
+•	Red: Pre-test failures (old_label = 1)
+•	Orange: Newly failed dies after test (prediction target)
+
+The challenge is to predict which green dies in the pre-test map will turn orange/red in the post-test map.
+
+ 
+ 
+ 
+Key Challenges
+1.	Extreme class imbalance — only ~2-5% of dies fail
+2.	High overlap — most failing dies have feature distributions that heavily overlap with passing dies (marginal failures)
+3.	High-dimensional block data — each die has ~2000 block readings; the model must handle dimensionality reduction, embedding, or direct modeling of this signal
+4.	Interpretability required — for each predicted failure, the model must output which features (and which block-level patterns, for Model B) and which spatial context contributed most to the prediction (engineers need actionable root cause, not a black box)
+ 
+Evaluation Criteria
+Criterion	Weight
+Prediction performance — Model A vs Model B comparison (F1, AUC-PR on minority class)	30%
+Handling of imbalance (no trivial "predict all pass")	20%
+Model interpretability (feature attribution, block pattern analysis, spatial heatmaps)		30%
+Creative use of multi-resolution data fusion and improvement analysis (Model A → B delta)	20%
+
+
+Data Approach
+The WM-811K wafer dataset is used as the spatial foundation, with synthetic die-level parametric features and block-level readings to be generated on top of it.
+
+Expected Deliverables
+1.	Model A: A trained model that takes (m × n) die-feature matrix + spatial context → outputs (m × 1) failure probabilities
+2.	Model B: A trained model that takes die-feature matrix + spatial context + block-level readings → outputs (m × 1) failure probabilities
+3.	Comparison analysis: Side-by-side performance metrics (F1, AUC-PR, accuracy) showing improvement (or lack thereof) from adding block-level data
+4.	Interpretability output: per-die feature importance + spatial contribution visualization (Model A), plus block reading pattern analysis (Model B)
+5.	Analysis of how each model handles the imbalanced, overlapping distributions
+
+Setup
+1.	Download the provided zip file and extract it to a local directory
+2.	Navigate to the extracted folder
+3.	Create and activate a virtual environment (recommended):
+•	Windows: python -m venv venv && venv\Scripts\activate
+•	Linux/Mac: python3 -m venv venv && source venv/bin/activate
+4.	Install dependencies: pip install -r requirements.txt
+5.	Download the reference dataset: https://www.kaggle.com/datasets/qingyi/wm811k-wafer-map 
+6.	Place LSWMD.pkl in data/ directory 
+7.	Run generate_data.py to produce the training, test, and validation datasets
+

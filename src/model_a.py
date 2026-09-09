@@ -52,6 +52,15 @@ class FeatureBundle:
 WAFER_AGG_COLS = ["sp_wprior_mean", "sp_wprior_p90", "sp_wprior_max",
                   "sp_wprior_std", "sp_wprior_frac_hi", "sp_wprior_n"]
 
+# REMOVED: "sp_die_vs_wafer_gap" (die_anom_score - sp_wprior_mean).
+# The idea is right -- it makes "risky relative to this wafer" an explicit feature -- but
+# measured, it is a distribution-shift trap. `die_anom_score` has train sd 1.30 against
+# test sd 2.03, so the gap inherits a 1.5x scale change between fit and inference.
+# LightGBM is scale-invariant and only lost 0.008 AUC-PR; the MIL encoder standardises
+# its inputs with TRAIN statistics and collapsed from 0.5694 to 0.3200 on test while its
+# validation score stayed at 0.56. A val/test gap that large is the signature of a
+# feature whose distribution moves, not of overfitting.
+
 
 def wafer_aggregates(dies: pd.DataFrame, scores: np.ndarray,
                      eligible: np.ndarray) -> pd.DataFrame:
@@ -74,14 +83,23 @@ def wafer_aggregates(dies: pd.DataFrame, scores: np.ndarray,
     out = pd.DataFrame(np.zeros((len(dies), len(WAFER_AGG_COLS)), dtype=np.float32),
                        columns=WAFER_AGG_COLS)
     hi = float(np.quantile(scores[eligible], 0.9)) if eligible.any() else 0.0
+    el_scores = scores[eligible] if eligible.any() else scores
+    global_mean = float(el_scores.mean()) if len(el_scores) else 0.0
+    shrink_k = 10.0  # Empirical-Bayes shrinkage parameter
 
     for _, w in dies.groupby("wafer_id", sort=False, observed=True):
         rows = w.index.to_numpy()
         el_rows = rows[eligible[rows]]
-        s = scores[el_rows] if len(el_rows) else np.zeros(1, dtype=np.float32)
+        n_el = len(el_rows)
+        s = scores[el_rows] if n_el else np.zeros(1, dtype=np.float32)
+        # Empirical-Bayes: a small wafer's mean is pulled toward the global mean, so a
+        # handful of eligible dies cannot hand stage 2 a confident wafer-level prior.
+        raw_mean = float(s.mean()) if n_el else 0.0
+        eb_mean = (float((n_el * raw_mean + shrink_k * global_mean) / (n_el + shrink_k))
+                   if n_el else global_mean)
         out.iloc[rows] = np.array([
-            s.mean(), np.percentile(s, 90), s.max(), s.std(),
-            float((s > hi).mean()), float(len(el_rows)),
+            eb_mean, np.percentile(s, 90), s.max(), s.std(),
+            float((s > hi).mean()), float(n_el),
         ], dtype=np.float32)
     return out
 
@@ -92,7 +110,7 @@ class WaferLensModel:
     def __init__(self, *, use_blocks: bool, wave: int = 1,
                  die_version: str = "v1", spatial_version: str = "v1",
                  block_version: str = "v1", params: dict | None = None,
-                 two_stage: bool = False):
+                 two_stage: bool = False, n_seeds: int = 5):
         self.use_blocks = use_blocks
         self.wave = wave
         self.die_version = die_version
@@ -100,6 +118,8 @@ class WaferLensModel:
         self.block_version = block_version
         self.two_stage = two_stage
         self.name = "B" if use_blocks else "A"
+        self.n_seeds = n_seeds
+        self.clfs: list[LGBMClassifier] = []
 
         self.die_fx = DieFeaturizer(die_version)
         self.block_fx = BlockFeaturizer(block_version) if use_blocks else None
@@ -174,8 +194,15 @@ class WaferLensModel:
         X_tr = X_all.loc[el_tr].reset_index(drop=True)
         self.columns_ = list(X_tr.columns)
 
-        self.clf = LGBMClassifier(**self.params)
-        self.clf.fit(X_tr, y_tr)
+        self.clfs = []
+        base_seed = self.params.get("random_state", SEED)
+        for s in range(self.n_seeds):
+            p = dict(self.params)
+            p["random_state"] = base_seed + s * 17
+            clf = LGBMClassifier(**p)
+            clf.fit(X_tr, y_tr)
+            self.clfs.append(clf)
+        self.clf = self.clfs[0]  # preserved for TreeExplainer / SHAP compatibility
 
         # Threshold comes from validation only -- never from train, never left at 0.5.
         el_va = val.eligible
@@ -232,7 +259,11 @@ class WaferLensModel:
         X = self.build_features(split).X
         if self.two_stage:
             X = self._apply_stage1(split, X)
-        return self.clf.predict_proba(X[self.columns_])[:, 1]
+        X_sub = X[self.columns_]
+        if len(self.clfs) <= 1:
+            return self.clf.predict_proba(X_sub)[:, 1]
+        probs = [clf.predict_proba(X_sub)[:, 1] for clf in self.clfs]
+        return np.mean(probs, axis=0)
 
     def design_matrix(self, split: Split) -> pd.DataFrame:
         """

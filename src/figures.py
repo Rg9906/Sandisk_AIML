@@ -312,13 +312,13 @@ def yield_escape_curve(y: np.ndarray, p: np.ndarray, chosen_threshold: float,
     for t in ths:
         flag = p >= t
         loss.append(100 * flag.mean())
-        escaped.append(100 * (y & ~flag).sum() / max(y.sum(), 1))
+        escaped.append(100 * ((y == 1) & ~flag).sum() / max(int(y.sum()), 1))
 
     fig, ax = plt.subplots(figsize=(7, 5.5))
     ax.plot(loss, escaped, lw=2, color="#c62828")
     flag = p >= chosen_threshold
     ax.scatter([100 * flag.mean()],
-               [100 * (y & ~flag).sum() / max(y.sum(), 1)],
+               [100 * ((y == 1) & ~flag).sum() / max(int(y.sum()), 1)],
                s=110, zorder=5, color="#1565c0", edgecolor="white",
                label=f"our operating point (thr={chosen_threshold:.3f})")
     ax.set_xlabel("yield loss  (% of dies screened)")
