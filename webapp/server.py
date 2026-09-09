@@ -19,7 +19,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from . import data
+from . import data, jobs
 
 STATIC = Path(__file__).resolve().parent / "static"
 FIGURES = Path(__file__).resolve().parents[1] / "figures"
@@ -48,7 +48,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", cache)
         self.end_headers()
         if self.command != "HEAD":
-            self.wfile.write(body)
+            try:
+                self.wfile.write(body)
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                pass          # client navigated away mid-response; nothing to report
 
     def _json(self, payload, code: int = 200):
         body = json.dumps(payload, allow_nan=False).encode("utf-8")
@@ -108,6 +111,41 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(data.root_cause_table())
         if head == "focus":
             return self._json(data.focus_die())
+        # ---- live pipeline runner
+        if head == "jobs" and len(parts) == 1:
+            return self._json({"presets": jobs.presets(), "recent": jobs.recent(),
+                               "active": (jobs.active().id if jobs.active() else None)})
+        if head == "jobs" and len(parts) >= 2:
+            if parts[1] == "start":
+                task = qs.get("task", [""])[0]
+                try:
+                    job = jobs.start(task, on_done=lambda j: data.reload_store())
+                except KeyError as exc:
+                    return self._error(400, str(exc))
+                except RuntimeError as exc:
+                    return self._error(409, str(exc))
+                return self._json(job.snapshot())
+            if len(parts) >= 3 and parts[2] == "cancel":
+                job = jobs.get(parts[1])
+                if not job:
+                    return self._error(404, f"no job '{parts[1]}'")
+                return self._json({"cancelled": job.cancel(), "id": job.id})
+            job = jobs.get(parts[1])
+            if not job:
+                return self._error(404, f"no job '{parts[1]}'")
+            since = int(_num(qs, "since", 0))
+            return self._json(job.snapshot(since))
+
+        # ---- console additions
+        if head == "scores":
+            return self._json(data.score_arrays())
+        if head == "fleet":
+            return self._json(data.fleet())
+        if head == "provenance":
+            return self._json(data.provenance(fresh=qs.get("fresh", ["0"])[0] == "1"))
+        if head == "reload":
+            return self._json(data.reload_store())
+
         if head == "health":
             s = data.store()
             return self._json({"ok": True, "dataset": s.dataset,

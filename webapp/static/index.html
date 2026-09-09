@@ -39,13 +39,17 @@
   <nav class="rail" id="rail">
     <div class="rail-h"><span>Cleanroom orchestration</span><b id="railFab">FAB-7</b></div>
 
+    <button class="navlink" data-view="run"><span class="material-symbols-outlined">play_circle</span>Live Pipeline Run<span class="led" id="runLed"></span></button>
     <button class="navlink on" data-view="matrix"><span class="material-symbols-outlined">grid_on</span>Live Wafer Matrix</button>
+    <button class="navlink" data-view="fleet"><span class="material-symbols-outlined">dashboard</span>Wafer Fleet Wall</button>
+    <button class="navlink" data-view="threshold"><span class="material-symbols-outlined">tune</span>Threshold Studio</button>
     <button class="navlink" data-view="inspector"><span class="material-symbols-outlined">biotech</span>Die Micro-Inspector</button>
     <button class="navlink" data-view="spatial"><span class="material-symbols-outlined">scatter_plot</span>Spatial Anomaly Maps</button>
     <button class="navlink" data-view="telemetry"><span class="material-symbols-outlined">graphic_eq</span>2000-Block Telemetry</button>
     <button class="navlink" data-view="bench"><span class="material-symbols-outlined">bar_chart</span>AUC-PR Benchmarks</button>
     <button class="navlink" data-view="interlock"><span class="material-symbols-outlined">precision_manufacturing</span>Robotics Interlock</button>
     <button class="navlink" data-view="pipeline"><span class="material-symbols-outlined">account_tree</span>A–Z Pipeline &amp; Architecture</button>
+    <button class="navlink" data-view="provenance"><span class="material-symbols-outlined">verified_user</span>Data Provenance<span class="led" id="provLed"></span></button>
 
     <div class="rail-foot">
       <div class="row"><span>Eligible dies</span><b id="rfEligible">—</b></div>
@@ -617,6 +621,171 @@
         <div class="ph"><span class="material-symbols-outlined">quiz</span><h2>Judges' Q&amp;A cheat sheet</h2><span class="spacer"></span><span class="tag mint">Stage-ready</span></div>
         <div class="pb"><div class="g2" id="qaGrid"></div></div>
       </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════ VIEW: RUN ══ -->
+    <section class="view" id="view-run">
+      <div class="panel lit">
+        <span class="bracket tl"></span><span class="bracket tr"></span>
+        <span class="bracket bl"></span><span class="bracket br"></span>
+        <div class="ph">
+          <span class="material-symbols-outlined">play_circle</span>
+          <h2 class="big">Live Pipeline Run</h2>
+          <span class="spacer"></span>
+          <span class="tag" id="runState">Idle</span>
+          <button class="btn ghost" id="btnCancel" hidden>Cancel run</button>
+        </div>
+        <div class="pb" style="padding-top:0">
+          <p style="font-size:12px;color:var(--tx-dim);line-height:1.6;margin:4px 0 0;max-width:96ch">
+            These start the real pipeline as a subprocess and stream its output back live. Nothing here is a replay:
+            the console below shows exactly what the terminal would show, and when a run finishes the dashboard
+            reloads from the artifacts it just wrote.
+          </p>
+        </div>
+      </div>
+
+      <div class="g3" id="presetGrid"></div>
+
+      <div class="g32">
+        <div class="panel">
+          <div class="ph"><span class="material-symbols-outlined">terminal</span><h2>Process output</h2>
+            <span class="spacer"></span><span class="sub mono" id="runCmd">no run yet</span></div>
+          <div class="pb tight">
+            <div class="console" id="console"><div class="empty">Pick a run above and press Execute. Output streams here as it happens.</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="margin-bottom:12px">
+            <div class="ph"><span class="material-symbols-outlined">timeline</span><h2>Stage progress</h2>
+              <span class="spacer"></span><span class="sub" id="runClock">—</span></div>
+            <div class="pb tight">
+              <div class="progress"><i id="runBar" style="width:0%"></i></div>
+              <div id="stageList" style="margin-top:10px"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="ph"><span class="material-symbols-outlined">speed</span><h2>Metrics as they land</h2></div>
+            <div class="pb tight"><div class="tiles c2" id="runMetrics">
+              <div class="tile cyan"><div class="k">AUC-PR</div><div class="v" id="rmAuc">—</div></div>
+              <div class="tile"><div class="k">F1 (fail)</div><div class="v" id="rmF1">—</div></div>
+              <div class="tile violet"><div class="k">Blend weight</div><div class="v" id="rmW">—</div></div>
+              <div class="tile mint"><div class="k">Elapsed</div><div class="v" id="rmT">—</div></div>
+            </div>
+            <p style="font-size:10.5px;color:var(--tx-dim);line-height:1.5;margin:11px 0 0">
+              Lifted straight out of the process stream as the pipeline prints them, so they appear in the order the
+              run actually produces them.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><span class="material-symbols-outlined">history</span><h2>Run history — this session</h2></div>
+        <div class="pb tight"><div class="tw"><table id="runHistory">
+          <thead><tr><th>Run</th><th>Task</th><th>Status</th><th class="r">Elapsed</th><th class="r">AUC-PR</th></tr></thead>
+          <tbody></tbody></table></div></div>
+      </div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════════ VIEW: FLEET ══ -->
+    <section class="view" id="view-fleet">
+      <div class="panel">
+        <div class="ph"><span class="material-symbols-outlined">dashboard</span><h2 class="big">Wafer Fleet Wall</h2>
+          <span class="spacer"></span>
+          <div class="seg" id="fleetMode">
+            <button class="on" data-fmode="risk">Predicted risk</button>
+            <button data-fmode="truth">Ground truth</button>
+          </div>
+          <select id="fleetSort">
+            <option value="new_fail">Sort: new failures</option>
+            <option value="fail_rate">Sort: failure rate</option>
+            <option value="max_risk">Sort: peak risk</option>
+            <option value="eligible">Sort: wafer size</option>
+            <option value="wafer_id">Sort: wafer id</option>
+          </select>
+        </div>
+        <div class="pb" style="padding-top:0">
+          <p style="font-size:12px;color:var(--tx-dim);line-height:1.6;margin:4px 0 12px;max-width:96ch">
+            All 40 held-out wafers at once. Each cell is box-downsampled by <b style="color:var(--cyan)">maximum</b>
+            risk, not mean — a fleet view exists to make the worst die on a wafer findable, and averaging is exactly
+            what would hide it. Click any wafer to open it in the matrix.</p>
+          <div class="fleet-grid" id="fleetGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════ VIEW: THRESHOLD ══ -->
+    <section class="view" id="view-threshold">
+      <div class="panel lit">
+        <span class="bracket tl"></span><span class="bracket tr"></span>
+        <span class="bracket bl"></span><span class="bracket br"></span>
+        <div class="ph"><span class="material-symbols-outlined">tune</span><h2 class="big">Threshold Studio</h2>
+          <span class="spacer"></span>
+          <button class="btn ghost" id="btnShipped">Snap to shipped</button>
+          <button class="btn ghost" id="btnMaxF1">Snap to best F1</button>
+        </div>
+        <div class="pb" style="padding-top:0">
+          <p style="font-size:12px;color:var(--tx-dim);line-height:1.6;margin:4px 0 0;max-width:96ch">
+            Drag the cut and watch every downstream number move. This recomputes against all
+            <b id="thN" style="color:var(--cyan)">—</b> eligible test dies in the browser, so nothing here is
+            interpolated from a stored table.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="pb">
+          <div class="ctrl" style="margin-bottom:18px">
+            <div class="ctrl-h"><span>Decision threshold on the calibrated scale</span><b id="thVal">—</b></div>
+            <input type="range" id="thSlider" min="0" max="1000" step="1" value="283">
+            <div class="ctrl-ends"><span>0.000 — flag everything</span><span id="thShippedMark">shipped</span><span>1.000 — flag nothing</span></div>
+          </div>
+          <div class="tiles c4" style="margin-bottom:12px">
+            <div class="tile cyan"><div class="k">Recall — failures caught</div><div class="v" id="thRecall">—</div><div class="n" id="thRecallN">—</div></div>
+            <div class="tile mint"><div class="k">Precision</div><div class="v" id="thPrec">—</div><div class="n" id="thPrecN">—</div></div>
+            <div class="tile violet"><div class="k">F1 on failures</div><div class="v" id="thF1">—</div><div class="n">the deliverable metric</div></div>
+            <div class="tile amber"><div class="k">Silicon scrapped</div><div class="v" id="thScrap">—</div><div class="n" id="thScrapN">—</div></div>
+          </div>
+          <div class="g2">
+            <div>
+              <p class="eyebrow">Confusion at this cut</p>
+              <div class="tiles c2">
+                <div class="tile mint"><div class="k">Pass → pass</div><div class="v sm" id="thTN">—</div></div>
+                <div class="tile amber"><div class="k">Pass → flagged (false alarm)</div><div class="v sm" id="thFP">—</div></div>
+                <div class="tile ruby"><div class="k">Fail → escaped</div><div class="v sm" id="thFN">—</div></div>
+                <div class="tile cyan"><div class="k">Fail → intercepted</div><div class="v sm" id="thTP">—</div></div>
+              </div>
+              <div style="margin-top:12px">
+                <div class="kv"><span class="k">Accuracy at this cut</span><span class="v" id="thAcc">—</span></div>
+                <div class="kv"><span class="k">All-pass accuracy, for contrast</span><span class="v amber" id="thAllPass">—</span></div>
+                <div class="kv"><span class="k">Escaped DPPM</span><span class="v ruby" id="thDppm">—</span></div>
+              </div>
+            </div>
+            <div>
+              <p class="eyebrow">Where this cut sits on the PR curve</p>
+              <div class="scope"><svg id="thPr" viewBox="0 0 480 340" style="height:340px"></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════ VIEW: PROVENANCE ══ -->
+    <section class="view" id="view-provenance">
+      <div class="panel">
+        <div class="ph"><span class="material-symbols-outlined">verified_user</span><h2 class="big">Data Provenance &amp; Integrity</h2>
+          <span class="spacer"></span>
+          <span class="tag mint" id="provScore">—</span>
+          <button class="btn ghost" id="btnRecheck">Re-run checks</button>
+        </div>
+        <div class="pb" style="padding-top:0">
+          <p style="font-size:12px;color:var(--tx-dim);line-height:1.6;margin:4px 0 0;max-width:96ch">
+            Every row is verified the moment you open this page — file hashes computed, config lines compared,
+            splits re-derived, all 32,598 predictions re-checked against the contract. It is not a note someone
+            wrote earlier, which is the only kind of provenance claim worth showing a judge.</p>
+        </div>
+      </div>
+      <div class="panel"><div class="pb"><div id="provList"></div></div></div>
     </section>
 
   </main>

@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-primary-fixed":"#002022","background":"#10141a","on-error-container":"#ffdad6","surface-container-low":"#181c22","on-background":"#e0e2ec","surface-bright":"#363941","surface-container":"#1c2026","on-surface":"#e0e2ec","inverse-surface":"#e0e2ec","tertiary-fixed-dim":"#d4bbff","on-secondary":"#273045","inverse-primary":"#006970","on-primary-fixed-variant":"#004f54","surface-container-high":"#262a31","secondary-container":"#40495e","on-secondary-fixed":"#121b2f","on-tertiary":"#400688","secondary-fixed":"#d9e2fd","on-primary":"#00363a","inverse-on-surface":"#2d3038","on-surface-variant":"#b9cacb","tertiary":"#fcf3ff","error":"#ffb4ab","on-error":"#690005","primary":"#dbfcff","on-tertiary-fixed-variant":"#582a9f","primary-fixed-dim":"#00dbe9","surface-variant":"#31353c","error-container":"#93000a","secondary-fixed-dim":"#bdc6e0","tertiary-container":"#e4d2ff","surface-container-lowest":"#0b0e15","tertiary-fixed":"#ebdcff","outline":"#849495","on-tertiary-fixed":"#260058","surface-tint":"#00dbe9","on-tertiary-container":"#7146b9","primary-container":"#00f0ff","on-primary-container":"#006970","outline-variant":"#3b494b","surface-container-highest":"#31353c","surface":"#10141a","primary-fixed":"#7df4ff","secondary":"#bdc6e0","on-secondary-container":"#afb8d2","surface-dim":"#10141a","on-secondary-fixed-variant":"#3d475c"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"grid-margin":"1rem","space-base":"1rem","space-xl":"2rem","space-md":"0.75rem","space-sm":"0.5rem","space-22xl":"3rem","space-lg":"1.5rem","space-2xs":"0.125rem","grid-gutter":"0.75rem","space-xs":"0.25rem"},fontFamily:{"body-sm":["Plus Jakarta Sans"],"headline-sm":["Outfit"],"label-md":["JetBrains Mono"],"headline-lg-mobile":["Outfit"],"headline-md":["Outfit"],"display-xl-mobile":["Outfit"],"headline-lg":["Outfit"],"body-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"telemetry-num":["JetBrains Mono"],"label-lg":["JetBrains Mono"],"display-xl":["Outfit"],"label-sm":["JetBrains Mono"]},fontSize:{"body-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.01em","fontWeight":"400"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"0em","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.06em","fontWeight":"500"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"display-xl-mobile":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"800"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","letterSpacing":"0em","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"400"}],"telemetry-num":["20px",{"lineHeight":"24px","letterSpacing":"0.02em","fontWeight":"700"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.05em","fontWeight":"600"}],"display-xl":["48px",{"lineHeight":"56px","letterSpacing":"-0.03em","fontWeight":"800"}],"label-sm":["10px",{"lineHeight":"14px","letterSpacing":"0.08em","fontWeight":"500"}]}}}};</script></head><body class="bg-surface-container-lowest font-body-md text-on-surface select-none overflow-x-hidden min-h-screen"><header class="fixed top-0 left-0 right-0 z-50 h-20 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_16px_rgba(0,240,255,0.06)]"><div class="h-20 w-full px-grid-margin flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><div class="relative flex items-center justify-center w-12 h-12 rounded-xl bg-surface-container-low shadow-[0_0_20px_rgba(0,240,255,0.2)]"><div class="absolute inset-1 rounded-full border border-primary/40 animate-spin"></div><div class="absolute inset-2 rounded-full border-t-2 border-primary-container animate-pulse"></div><div class="w-3 h-3 rounded-full bg-primary-container shadow-[0_0_12px_#00f0ff]"></div></div><div class="flex flex-col"><div class="flex items-center gap-space-sm"><span class="font-headline-sm text-headline-sm text-primary tracking-wider">WAFERLENS <span class="text-primary-container">//</span> OS v4.2</span><span class="px-space-xs py-space-2xs rounded bg-surface-container-high text-primary font-label-sm text-label-sm">SEC-GRADE 1</span></div><span class="font-label-sm text-label-sm text-on-surface-variant tracking-widest uppercase">MULTI-RESOLUTION NEURAL YIELD INTELLIGENCE // FAB-7 TOKYO CLEANROOM</span></div><div class="hidden 2xl:flex items-center gap-space-xs pl-space-md"><div class="flex items-center gap-space-xs px-space-sm py-space-2xs rounded bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-primary-container animate-ping"></span><span class="font-label-sm text-label-sm text-primary">LINE-4 ONLINE</span></div><div class="px-space-sm py-space-2xs rounded bg-surface-container-low font-label-sm text-label-sm text-primary-container">INFERENCE: 1.4ms</div><div class="px-space-sm py-space-2xs rounded bg-surface-container-low font-label-sm text-label-sm text-on-surface-variant">MEMMAP: 0.85GB FP16</div></div></div><div class="hidden xl:flex items-center gap-space-sm bg-surface-container-low/80 px-space-md py-space-xs rounded-xl shadow-[0_0_12px_rgba(0,0,0,0.4)]"><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface-variant">MODEL A (DIE+SPATIAL)</span><span class="font-telemetry-num text-body-md text-secondary">0.551 AUC-PR</span></div><div class="h-6 w-px bg-surface-container-high"></div><div class="flex flex-col"><span class="font-label-sm text-label-sm text-primary-fixed">MODEL B (+2000 BLOCKS)</span><div class="flex items-center gap-space-xs"><span class="font-telemetry-num text-body-md text-primary-container font-bold">0.586 AUC-PR</span><span class="font-label-sm text-label-sm text-primary">▲ +5.4%</span></div></div><div class="h-6 w-px bg-surface-container-high"></div><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface-variant">DISCRIMINATION</span><span class="font-telemetry-num text-body-md text-primary font-bold">7.9× OVER GDBN</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm px-space-md py-space-xs rounded-lg bg-surface-container-low cursor-pointer"><div class="flex flex-col text-right"><span class="font-label-sm text-label-sm text-primary-fixed">LOT #WD-2026-NAND-8TB</span><span class="font-label-sm text-label-sm text-error font-bold">WAFER: W_F_0042 [CRITICAL]</span></div><span class="material-symbols-outlined text-primary-container text-[18px]">arrow_drop_down</span></div><button class="relative flex items-center gap-space-sm px-space-md py-space-sm rounded-lg bg-error-container text-on-error font-headline-sm text-body-md tracking-wider shadow-[0_0_24px_rgba(255,23,68,0.4)] cursor-pointer hover:bg-error hover:text-on-error transition-all"><span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-error"></span></span><span class="material-symbols-outlined text-[16px]">bolt</span>DISPATCH FAB WORK ORDER</button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><aside class="fixed left-0 top-20 bottom-0 w-72 bg-surface-container-lowest z-40 flex flex-col p-space-md justify-between"><div class="flex flex-col gap-space-md"><div class="flex items-center justify-between px-space-sm"><span class="font-label-sm text-label-sm text-on-surface-variant tracking-widest uppercase">CLEANROOM ORCHESTRATION</span><span class="font-label-sm text-label-sm text-primary-container">FAB-7 HUD</span></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-surface-container-high text-primary font-bold shadow-[0_0_12px_rgba(0,240,255,0.15)]"><a class="flex items-center px-space-md py-space-sm rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-label-lg text-label-md" data-path="live-wafer-matrix" href="#">Live Wafer Matrix</a><a class="flex items-center px-space-md py-space-sm rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-label-lg text-label-md" data-path="a-z-pipeline-architecture" href="#">A-Z Pipeline &amp; Architecture</a><a class="flex items-center px-space-md py-space-sm rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-label-lg text-label-md" data-path="model-benchmark-ablation" href="#">Model Benchmark &amp; Ablation</a><a class="flex items-center px-space-md py-space-sm rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-label-lg text-label-md" data-path="2000-block-mri-die-inspector" href="#">2000-Block MRI &amp; Die Inspector</a><a class="flex items-center px-space-md py-space-sm rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-label-lg text-label-md" data-path="robotics-cleanroom-interlock" href="#">Robotics &amp; Cleanroom Interlock</a></nav></div><div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-space-xs"><div class="flex items-center justify-between font-label-sm text-label-sm"><span class="text-on-surface-variant">RETICLE CALIBRATION</span><span class="text-primary-container">0.02nm RMS</span></div><div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden"><div class="bg-primary-container h-full w-[84%]"></div></div><div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant"><span>CHAMBER #04</span><span>21.4°C ISO-1</span></div></div></aside><div class="pl-72"><main class="relative pt-20 w-full px-grid-margin min-h-screen bg-surface-container-lowest"><div class="flex flex-col w-full gap-space-lg pb-space-2xl">
+<!-- Top Command & Reticle Navigation Bar -->
+<section class="flex flex-col gap-space-md pt-space-sm">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="px-space-xs py-space-2xs bg-primary/10 text-primary-container font-label-sm text-label-sm tracking-widest uppercase">
+            SUB-DIE TOMOGRAPHY // 2,000 BLOCKS PER DIE
+          </span>
+<span class="px-space-xs py-space-2xs bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+            CALIBRATION STAGE #9
+          </span>
+<span class="px-space-xs py-space-2xs bg-error/15 text-error font-label-sm text-label-sm">
+            ANOMALY SIGNATURE: EXCURSION CLUSTER
+          </span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">
+          2,000-Block MRI &amp; Sub-Die Quantum Inspector
+        </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-4xl">
+          Nanoscale electrical tomography across 2,000 contiguous block registers for Die [Row 31, Col 7]. Resolving physical 105-block excursion cluster under high-voltage dielectric stress.
+        </p>
+</div>
+<!-- Live Stream Pill & Global Context -->
+<div class="flex flex-col items-start lg:items-end gap-space-xs">
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse shadow-[0_0_8px_#00f0ff]"></span>
+<span class="font-label-sm text-label-sm text-primary-container tracking-wider">
+            SAMPLING: 100 GSa/s // MEMMAP FP16 0.85 GB ACTIVE
+          </span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+          LASER RETICLE COORD: X:+124.088nm Y:-45.192nm RMS
+        </span>
+</div>
+</div>
+<!-- Interactive Filter & Mode Switch Rail -->
+<div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-space-md p-space-sm bg-surface-container-low/90 backdrop-blur-md">
+<!-- Coordinate Selector Chips -->
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-label-sm text-label-sm text-on-surface-variant mr-space-xs">TARGET DIE:</span>
+<button class="px-space-md py-space-xs font-label-sm text-label-sm bg-primary-container text-on-primary font-bold shadow-[0_0_12px_rgba(0,240,255,0.4)] transition-all flex items-center gap-space-xs" id="die-31-07" onclick="setDie('31-07')">
+<span class="material-symbols-outlined text-[14px]">my_location</span>
+          DIE [31, 07] (CRITICAL)
+        </button>
+<button class="px-space-md py-space-xs font-label-sm text-label-sm bg-surface-container-high text-on-surface-variant hover:text-primary transition-all flex items-center gap-space-xs" id="die-14-22" onclick="setDie('14-22')">
+          DIE [14, 22] (WARN)
+        </button>
+<button class="px-space-md py-space-xs font-label-sm text-label-sm bg-surface-container-high text-on-surface-variant hover:text-primary transition-all flex items-center gap-space-xs" id="die-08-45" onclick="setDie('08-45')">
+          DIE [08, 45] (MARGINAL)
+        </button>
+<button class="px-space-sm py-space-xs font-label-sm text-label-sm bg-surface-container-highest text-primary-fixed hover:bg-surface-bright transition-all">
+          + SELECT CHIP VIA RETICLE
+        </button>
+</div>
+<!-- Mode Switch Buttons -->
+<div class="flex items-center gap-space-2xs bg-surface-container p-space-2xs overflow-x-auto max-w-full">
+<button class="px-space-sm py-space-xs font-label-sm text-label-sm bg-primary text-on-primary font-bold shadow-[0_0_8px_rgba(0,240,255,0.3)]">
+          [WAVEFORM OSCILLOSCOPE]
+        </button>
+<button class="px-space-sm py-space-xs font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-all">
+          [2,000-BLOCK MATRIX HEATMAP]
+        </button>
+<button class="px-space-sm py-space-xs font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-all">
+          [ATTENTION-MIL WEIGHTS]
+        </button>
+<button class="px-space-sm py-space-xs font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-all">
+          [3D TOPOGRAPHY]
+        </button>
+</div>
+</div>
+</section>
+<!-- Main Section 1: Hero Tomography Grid & Interactive Oscilloscope -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Left Panel (65% width equivalent: 8 cols out of 12) -->
+<div class="lg:col-span-8 flex flex-col gap-space-sm bg-surface-container-low p-space-md shadow-md relative overflow-hidden">
+<!-- Reticle corner styling via pure CSS absolute blocks -->
+<div class="absolute top-0 left-0 w-2 h-2 bg-primary-container"></div>
+<div class="absolute top-0 right-0 w-2 h-2 bg-primary-container"></div>
+<div class="absolute bottom-0 left-0 w-2 h-2 bg-primary-container"></div>
+<div class="absolute bottom-0 right-0 w-2 h-2 bg-primary-container"></div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary-container text-[20px]">show_chart</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">
+            2,000-Block Sensor Waveform &amp; Spectral Anomaly Trace
+          </h2>
+</div>
+<!-- Zoom Controls -->
+<div class="flex items-center gap-space-xs">
+<button class="px-space-xs py-space-2xs bg-surface-container text-on-surface-variant hover:text-primary font-label-sm text-label-sm transition-all" id="zoom-all" onclick="setTraceZoom('all')">
+            [ALL 2,000 BLOCKS]
+          </button>
+<button class="px-space-xs py-space-2xs bg-primary/20 text-primary font-label-sm text-label-sm transition-all" id="zoom-cluster" onclick="setTraceZoom('cluster')">
+            [BLOCKS #1200 - #1800]
+          </button>
+<button class="px-space-xs py-space-2xs bg-surface-container text-on-surface-variant hover:text-primary font-label-sm text-label-sm transition-all" id="zoom-fft" onclick="setTraceZoom('fft')">
+            [SPECTRAL FFT]
+          </button>
+</div>
+</div>
+<!-- Interactive Multi-Channel Oscilloscope Canvas (SVG) -->
+<div class="relative w-full h-80 bg-surface-container-lowest overflow-hidden flex flex-col justify-end p-space-xs select-none">
+<!-- Background Coordinate Gridlines -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" xmlns="http://www.w3.org/2000/svg">
+<pattern height="32" id="grid-pattern" patternunits="userSpaceOnUse" width="40">
+<path d="M 40 0 L 0 0 0 32" fill="none" stroke="#00f0ff" stroke-width="0.75"></path>
+</pattern>
+<rect fill="url(#grid-pattern)" height="100%" width="100%"></rect>
+</svg>
+<!-- Dynamic SVG Trace -->
+<svg class="w-full h-full z-10" preserveaspectratio="none" viewbox="0 0 1000 300">
+<defs>
+<!-- Gradient for the anomaly canyon -->
+<lineargradient id="anomaly-grad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#ff1744" stop-opacity="0.55"></stop>
+<stop offset="50%" stop-color="#ff9100" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#ff1744" stop-opacity="0.0"></stop>
+</lineargradient>
+<lineargradient id="primary-glow" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#00f0ff" stop-opacity="0.3"></stop>
+<stop offset="70%" stop-color="#ff9100" stop-opacity="0.9"></stop>
+<stop offset="76%" stop-color="#ff1744" stop-opacity="1"></stop>
+<stop offset="82%" stop-color="#ff9100" stop-opacity="0.8"></stop>
+<stop offset="100%" stop-color="#00f0ff" stop-opacity="0.4"></stop>
+</lineargradient>
+</defs>
+<!-- Safe Baseline Band (100mV +/- 15mV) -->
+<rect fill="#00f0ff" fill-opacity="0.04" height="50" width="1000" x="0" y="160"></rect>
+<line opacity="0.4" stroke="#00f0ff" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="1000" y1="185" y2="185"></line>
+<text fill="#dbfcff" font-family="JetBrains Mono" font-size="9" opacity="0.6" x="12" y="180">NOMINAL 100 mV BASELINE</text>
+<text fill="#ffb4ab" font-family="JetBrains Mono" font-size="9" opacity="0.7" x="12" y="130">UPPER SPEC LIMIT 125 mV</text>
+<line opacity="0.3" stroke="#ffb4ab" stroke-dasharray="2,4" stroke-width="1" x1="0" x2="1000" y1="135" y2="135"></line>
+<!-- Excursion Shaded Zone (Block #1420 - #1610 => normalized X 710 to 805) -->
+<polygon fill="url(#anomaly-grad)" points="710,185 710,130 730,75 746,42 760,58 780,105 805,185"></polygon>
+<!-- Channel Beta: Thermal Pyrometer Drift (Amber) -->
+<path d="M 0,220 Q 250,218 500,215 T 700,200 Q 750,140 805,190 T 1000,215" fill="none" opacity="0.65" stroke="#ff9100" stroke-dasharray="6,2" stroke-width="1.5"></path>
+<!-- Channel Gamma: Wordline BER Burst (Subtle dashed ruby) -->
+<path d="M 0,260 L 680,260 L 710,240 L 725,195 L 746,140 L 765,190 L 795,250 L 1000,260" fill="none" opacity="0.8" stroke="#ff1744" stroke-dasharray="2,2" stroke-width="1"></path>
+<!-- Channel Alpha: Main 2,000-Block Voltage Stream with Noise & Peak Spike -->
+<path d="M 0,185 
+            Q 30,192 60,182 T 120,187 T 180,180 T 240,189 T 300,183 T 360,188 T 420,181 T 480,186 T 540,184 T 600,186 T 660,182 T 700,180
+            L 712,165 L 724,120 L 736,88 L 746,42 L 755,75 L 768,96 L 782,142 L 798,172 L 812,185
+            T 860,184 T 920,187 T 980,182 L 1000,185" fill="none" stroke="url(#primary-glow)" stroke-width="2.5"></path>
+<!-- Scrubber locked at Block #1492 (X = 746) -->
+<line stroke="#00f0ff" stroke-dasharray="4,2" stroke-width="1.5" x1="746" x2="746" y1="0" y2="300"></line>
+<circle class="animate-ping" cx="746" cy="42" fill="#ff1744" r="5" stroke="#00f0ff" stroke-width="2"></circle>
+<circle cx="746" cy="42" fill="#ff1744" r="4" stroke="#dbfcff" stroke-width="1.5"></circle>
+<!-- Interactive Marker Labels inside SVG -->
+<rect fill="#0b0e15" fill-opacity="0.92" height="74" stroke="#00f0ff" stroke-width="1" width="220" x="755" y="24"></rect>
+<text fill="#00f0ff" font-family="JetBrains Mono" font-size="11" font-weight="700" x="765" y="42">LOCK: BLOCK #1492</text>
+<text fill="#ffdad6" font-family="JetBrains Mono" font-size="10" x="765" y="58">VOLTAGE: 138.4 mV (+38.4%)</text>
+<text fill="#d9e2fd" font-family="JetBrains Mono" font-size="10" x="765" y="72">ATTN WEIGHT: 0.089 (8.9× avg)</text>
+<text fill="#00f0ff" font-family="JetBrains Mono" font-size="10" x="765" y="86">AUTOCORR LAG-1: 0.248</text>
+</svg>
+<!-- Floating Scrubber Tooltip Overlay (HTML Micro-HUD) -->
+<div class="absolute top-space-xs left-space-xs flex items-center gap-space-md bg-surface-container-high/90 px-space-sm py-space-2xs text-on-surface">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span>CH-α: VOLTAGE (100mV NOM)</span>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-secondary">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+<span>CH-β: THERMAL PYRO</span>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-error">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span>CH-γ: WORDLINE BER</span>
+</div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant pt-space-xs">
+<span>BLOCK #0001 (SECTOR 1A)</span>
+<span class="text-error font-bold">CLUSTER #1420 - #1610 (105 BLOCKS RUN)</span>
+<span>BLOCK #2000 (SECTOR 4D)</span>
+</div>
+</div>
+<!-- Trace Telemetry Footer Band -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-xs pt-space-xs">
+<div class="bg-surface-container p-space-sm flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Cluster Run Length</span>
+<span class="font-telemetry-num text-telemetry-num text-error font-bold">105 BLOCKS</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Span: #1462 - #1567</span>
+</div>
+<div class="bg-surface-container p-space-sm flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Peak Amplitude</span>
+<span class="font-telemetry-num text-telemetry-num text-primary-container font-bold">138.4 mV</span>
+<span class="font-label-sm text-label-sm text-error">+38.4% above tolerance</span>
+</div>
+<div class="bg-surface-container p-space-sm flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Autocorrelation</span>
+<span class="font-telemetry-num text-telemetry-num text-primary-fixed font-bold">0.248</span>
+<span class="font-label-sm text-label-sm text-primary">Clustered defect sig</span>
+</div>
+<div class="bg-surface-container p-space-sm flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Phase Convergence</span>
+<span class="font-telemetry-num text-telemetry-num text-secondary-fixed font-bold">99.8%</span>
+<span class="font-label-sm text-label-sm text-secondary">Synchronous excursion</span>
+</div>
+</div>
+</div>
+<!-- Right Panel: Sub-Die 2D Spatial Layout (35% equivalent: 4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-space-sm bg-surface-container-low p-space-md shadow-md relative">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-container text-[20px]">grid_view</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">Sub-Die Spatial Matrix</h2>
+</div>
+<span class="px-space-xs py-space-2xs bg-surface-container-high text-primary-container font-label-sm text-label-sm">
+          50×40 (2,000 REGISTERS)
+        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Planar layout of 2,000 physical bitline blocks inside Die [31, 07]. Bottom-right sector 4B exhibits severe contiguous cluster breakdown.
+      </p>
+<!-- 50x40 Matrix Simulation Surface -->
+<div class="relative bg-surface-container-lowest p-space-sm flex flex-col items-center justify-center overflow-hidden">
+<!-- SVG 50x40 Micro-Grid Matrix Rendering -->
+<svg class="w-full h-64 cursor-crosshair select-none" id="matrix-svg" viewbox="0 0 250 200">
+<defs>
+<radialgradient cx="80%" cy="80%" id="cluster-glow" r="35%">
+<stop offset="0%" stop-color="#ff1744" stop-opacity="0.85"></stop>
+<stop offset="60%" stop-color="#ff9100" stop-opacity="0.45"></stop>
+<stop offset="100%" stop-color="#ff1744" stop-opacity="0.0"></stop>
+</radialgradient>
+</defs>
+<!-- Ambient cluster backglow -->
+<rect fill="url(#cluster-glow)" height="90" width="110" x="130" y="100"></rect>
+<!-- Generate regular grid blocks with script-free high fidelity pattern -->
+<g fill="#1c2b36" opacity="0.8">
+<!-- Simulated rows 1-30: nominal die surface -->
+<rect fill="#0d1822" height="100" width="230" x="10" y="10"></rect>
+<!-- Grid dotted lines across matrix -->
+<path d="M 10,30 H 240 M 10,50 H 240 M 10,70 H 240 M 10,90 H 240 M 10,110 H 240 M 10,130 H 240 M 10,150 H 240 M 10,170 H 240 M 10,190 H 240" stroke="#182736" stroke-dasharray="2,2" stroke-width="1"></path>
+<path d="M 30,10 V 190 M 60,10 V 190 M 90,10 V 190 M 120,10 V 190 M 150,10 V 190 M 180,10 V 190 M 210,10 V 190" stroke="#182736" stroke-dasharray="2,2" stroke-width="1"></path>
+</g>
+<!-- Defect Cluster: Sector 4B (Blocks 1420 - 1610) -->
+<g>
+<!-- Clustered hot dies with color variation -->
+<!-- Concentrated Ruby Cluster Cells -->
+<rect class="animate-pulse" fill="#ff1744" height="12" width="14" x="155" y="125"></rect>
+<rect fill="#ff1744" height="12" width="14" x="171" y="125"></rect>
+<rect fill="#ff9100" height="12" width="14" x="187" y="125"></rect>
+<rect fill="#ff9100" height="12" width="14" x="203" y="125"></rect>
+<rect fill="#ff1744" height="12" width="14" x="155" y="139"></rect>
+<rect fill="#ff1744" height="12" width="14" x="171" y="139"></rect>
+<rect fill="#ff1744" height="12" width="14" x="187" y="139"></rect>
+<rect fill="#ff9100" height="12" width="14" x="203" y="139"></rect>
+<rect fill="#ff9100" height="12" opacity="0.8" width="14" x="219" y="139"></rect>
+<rect fill="#ff9100" height="12" width="14" x="155" y="153"></rect>
+<rect fill="#ff1744" height="12" width="14" x="171" y="153"></rect>
+<rect fill="#ff1744" height="12" width="14" x="187" y="153"></rect>
+<rect fill="#ff1744" height="12" width="14" x="203" y="153"></rect>
+<rect fill="#ff1744" height="12" width="14" x="219" y="153"></rect>
+<rect fill="#ff9100" height="12" width="14" x="171" y="167"></rect>
+<rect fill="#ff9100" height="12" width="14" x="187" y="167"></rect>
+<rect fill="#ff1744" height="12" opacity="0.9" width="14" x="203" y="167"></rect>
+<!-- Focal reticle target on Block #1492 -->
+<rect fill="none" height="12" stroke="#00f0ff" stroke-width="1.5" width="14" x="187" y="139"></rect>
+<circle cx="194" cy="145" fill="#dbfcff" r="2"></circle>
+</g>
+<!-- Sector Boundaries -->
+<line opacity="0.4" stroke="#00f0ff" stroke-dasharray="3,3" stroke-width="0.8" x1="125" x2="125" y1="10" y2="190"></line>
+<line opacity="0.4" stroke="#00f0ff" stroke-dasharray="3,3" stroke-width="0.8" x1="10" x2="240" y1="100" y2="100"></line>
+<!-- Sector Watermarks -->
+<text fill="#3b494b" font-family="JetBrains Mono" font-size="8" x="18" y="24">SEC-1A</text>
+<text fill="#3b494b" font-family="JetBrains Mono" font-size="8" x="135" y="24">SEC-1B</text>
+<text fill="#3b494b" font-family="JetBrains Mono" font-size="8" x="18" y="114">SEC-4A</text>
+<text fill="#ff9100" font-family="JetBrains Mono" font-size="8" font-weight="bold" x="135" y="114">SEC-4B [EXCURSION]</text>
+<!-- Bounding Reticle overlay -->
+<rect fill="none" height="64" opacity="0.9" stroke="#ff1744" stroke-dasharray="4,2" stroke-width="1" width="88" x="150" y="120"></rect>
+</svg>
+<!-- Coordinate Callout Box -->
+<div class="w-full bg-surface-container px-space-sm py-space-xs mt-space-xs flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface-variant">INSPECTED REGISTER:</span>
+<span class="text-primary font-bold" id="hover-readout">#1504 (ROW 38, COL 14) // Δ+34.2mV</span>
+</div>
+</div>
+<!-- Cleanroom Sub-die Diagnostic Stats -->
+<div class="flex flex-col gap-space-2xs">
+<div class="flex justify-between items-center bg-surface-container px-space-sm py-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">SECTOR FAULT DENSITY</span>
+<span class="font-label-md text-label-md text-error font-bold">84.2% (SECTOR 4B)</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container px-space-sm py-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">DIELECTRIC LEAKAGE</span>
+<span class="font-label-md text-label-md text-primary-container font-bold">14.2 nA/μm²</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container px-space-sm py-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">PHYSICAL DIE LOCATION</span>
+<span class="font-label-md text-label-md text-secondary font-bold">WAFER PERIMETER (R=144mm)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Section 2: Gated Attention MIL vs Statistical Pooling Deep Dive -->
+<section class="flex flex-col gap-space-md">
+<div class="flex flex-col gap-space-2xs">
+<div class="flex items-center gap-space-xs">
+<span class="px-space-xs py-space-2xs bg-surface-container-high text-primary-fixed font-label-sm text-label-sm">
+          ALGORITHMIC ABLATION
+        </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase">
+          MODEL B NEURAL YIELD ARCHITECTURE
+        </span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary">
+        Statistical Pooling vs. Gated Attention MIL &amp; Root Cause
+      </h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-space-md">
+<!-- Column 1: The 25 Block Summary Statistics (Shipped Model B) -->
+<div class="flex flex-col gap-space-md bg-surface-container-low p-space-md shadow-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-primary">
+              25 Block Summary Statistics
+            </h3>
+<span class="px-space-xs py-space-2xs bg-primary/20 text-primary-container font-label-sm text-label-sm font-bold">
+              SHIPPED (1.4ms)
+            </span>
+</div>
+<!-- Explanatory Callout Banner -->
+<div class="bg-surface-container p-space-sm text-on-surface-variant font-body-sm text-body-sm italic">
+            "The plain mean captures 98% of the block predictive lift (+0.0298 AUC-PR over baseline die features)."
+          </div>
+</div>
+<!-- Top 8 Extracted Feature Importance Table -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex justify-between items-center text-on-surface-variant font-label-sm text-label-sm px-space-xs pb-space-2xs">
+<span>EXTRACTED STATISTIC</span>
+<div class="flex items-center gap-space-md">
+<span>VALUE</span>
+<span class="w-16 text-right">SHAP GAIN</span>
+</div>
+</div>
+<div class="flex justify-between items-center bg-surface-container px-space-sm py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-primary-container"></span>
+<span class="font-label-sm text-label-sm text-primary font-bold">bl_mean</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-sm text-label-sm text-on-surface">114.2 mV</span>
+<span class="font-label-sm text-label-sm text-primary-container font-bold w-16 text-right">+0.038</span>
+</div>
+</div>
+<div class="flex justify-between items-center bg-surface-container px-space-sm py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-error"></span>
+<span class="font-label-sm text-label-sm text-primary font-bold">bl_max_run_length</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-sm text-label-sm text-on-surface">105 blk</span>
+<span class="font-label-sm text-label-sm text-primary-container font-bold w-16 text-right">+0.009</span>
+</div>
+</div>
+<div class="flex justify-between items-center bg-surface-container px-space-sm py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-error"></span>
+<span class="font-label-sm text-label-sm text-primary font-bold">bl_hot_thresh_count</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-sm text-label-sm text-on-surface">142 blk</span>
+<span class="font-label-sm text-label-sm text-primary font-bold w-16 text-right">+0.006</span>
+</div>
+</div>
+<div class="flex justify-between items-center bg-surface-container px-space-sm py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-secondary"></span>
+<span class="font-label-sm text-label-sm text-primary font-bold">bl_cluster_entropy</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-sm text-label-sm text-on-surface">2.41 nats</span>
+<span class="font-label-sm text-label-sm text-primary font-bold w-16 text-right">+0.004</span>
+</div>
+</div>
+<div class="flex justify-between items-center bg-surface-container px-space-sm py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-on-surface-variant"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">bl_skewness</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-sm text-label-sm text-on-surface">+1.84</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold w-16 text-right">+0.003</span>
+</div>
+</div>
+<div class="flex justify-between items-center bg-surface-container px-space-sm py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-on-surface-variant"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">bl_kurtosis</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-sm text-label-sm text-on-surface">5.12</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold w-16 text-right">+0.002</span>
+</div>
+</div>
+<div class="flex justify-between items-center bg-surface-container px-space-sm py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-on-surface-variant"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">bl_p95_spread</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-sm text-label-sm text-on-surface">31.8 mV</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold w-16 text-right">+0.002</span>
+</div>
+</div>
+<div class="flex justify-between items-center bg-surface-container px-space-sm py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-primary"></span>
+<span class="font-label-sm text-label-sm text-primary font-bold">bl_autocorr_lag1</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-sm text-label-sm text-on-surface">0.248</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold w-16 text-right">+0.001</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column 2: Gated Attention MIL Profile (Ilse et al. 2018) -->
+<div class="flex flex-col gap-space-md bg-surface-container-low p-space-md shadow-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-primary">
+              Gated Attention MIL Profile
+            </h3>
+<span class="px-space-xs py-space-2xs bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+              ILSE ET AL. 2018
+            </span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+            2,000 blocks → 100 chunks of 20 → Attention weights $a_k$
+          </span>
+</div>
+<!-- Attention Distribution Bar Chart (SVG) -->
+<div class="bg-surface-container-lowest p-space-sm flex flex-col gap-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface-variant">CHUNKS 0 - 100</span>
+<span class="text-error font-bold">PEAK 8.9% @ CHUNK #75</span>
+</div>
+<svg class="w-full h-36" viewbox="0 0 400 120">
+<!-- Background Baseline at 1.0% -->
+<line stroke="#3b494b" stroke-dasharray="2,2" stroke-width="1" x1="0" x2="400" y1="105" y2="105"></line>
+<text fill="#849495" font-family="JetBrains Mono" font-size="8" x="5" y="100">NOMINAL 1.0%</text>
+<!-- Flat baseline distribution for Chunks 0 - 70 -->
+<path d="M 0,105 L 280,105" opacity="0.6" stroke="#00f0ff" stroke-width="2"></path>
+<!-- Attention Spike at Chunks 71 - 80 (Blocks 1420 - 1600) -->
+<path d="M 280,105 L 286,85 L 292,50 L 300,15 L 308,24 L 316,58 L 324,95 L 330,105" fill="#ff1744" fill-opacity="0.3" stroke="#ff1744" stroke-width="2"></path>
+<!-- Trailing Flat Baseline for Chunks 81 - 100 -->
+<path d="M 330,105 L 400,105" opacity="0.6" stroke="#00f0ff" stroke-width="2"></path>
+<!-- Highlight marker on the attention peak -->
+<circle cx="300" cy="15" fill="#00f0ff" r="3"></circle>
+<text fill="#ffb4ab" font-family="JetBrains Mono" font-size="9" font-weight="bold" x="245" y="12">a_k = 0.089 (Chunk 75)</text>
+</svg>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Chunk #1 (Blk 1-20)</span>
+<span class="text-error font-bold">Chunks 71-80 (Blk 1420-1600)</span>
+<span>Chunk #100 (Blk 1981-2000)</span>
+</div>
+</div>
+<!-- Honest Evaluation Note -->
+<div class="bg-surface-container p-space-sm flex flex-col gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-space-xs text-primary font-bold">
+<span class="material-symbols-outlined text-[16px] text-primary-container">info</span>
+<span>Honest Evaluation &amp; Runtime Cost</span>
+</div>
+<p>
+            Built &amp; measured. Reached <span class="text-primary font-bold">0.580 AUC-PR</span>, but did not beat statistical pooling in wall-clock inference (<span class="text-error font-bold">18.4ms vs 1.4ms</span>). Retained strictly for zero-cost interpretive validation.
+          </p>
+</div>
+</div>
+<!-- Column 3: Multimodal Root Cause Concordance -->
+<div class="flex flex-col gap-space-md bg-surface-container-low p-space-md shadow-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-primary">
+              Root Cause Concordance
+            </h3>
+<span class="px-space-xs py-space-2xs bg-primary/20 text-primary font-label-sm text-label-sm font-bold">
+              95% ALIGNED
+            </span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+            Multimodal wafer-to-die causal reconciliation
+          </span>
+</div>
+<!-- Circular Concordance Radial Meter -->
+<div class="flex items-center gap-space-md bg-surface-container p-space-sm">
+<div class="relative w-16 h-16 flex items-center justify-center shrink-0">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-highest" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-primary-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="95, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<span class="absolute font-telemetry-num text-body-md text-primary font-bold">95%</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-bold">CONCORDANCE INDEX</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Macro spatial pattern matches micro-die defect signature.</span>
+</div>
+</div>
+<!-- Detailed Hypothesis Breakdown Cards -->
+<div class="flex flex-col gap-space-xs">
+<div class="bg-surface-container p-space-sm flex flex-col gap-space-2xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Macro-Wafer Spatial Signature</span>
+<span class="font-label-md text-label-md text-primary-fixed">Edge-Ring Thermal Excursion</span>
+<span class="font-label-sm text-label-sm text-secondary">5×5 Bad Neighbor Density: 0.61</span>
+</div>
+<div class="bg-surface-container p-space-sm flex flex-col gap-space-2xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Micro-Die Block Signature</span>
+<span class="font-label-md text-label-md text-error">Wordline thermal runaway in sub-array 4B</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Span: 105 consecutive bitline registers</span>
+</div>
+<div class="bg-surface-container p-space-sm flex flex-col gap-space-2xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Physical Cleanroom Mechanism</span>
+<p class="font-body-sm text-body-sm text-on-surface">
+              Edge lamp non-uniformity in RTP-02 induced extreme thermal gradient across wafer perimeter, stressing die row 31 wordline dielectric breakdown.
+            </p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-highest px-space-sm py-space-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]">verified</span>
+<span class="font-label-sm text-label-sm text-primary font-bold tracking-wide">
+            [VERIFIED BY SCANNING ELECTRON MICROSCOPE (SEM)]
+          </span>
+</div>
+</div>
+</div>
+</section>
+<!-- Cleanroom Image Evidence & Context Section -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Cleanroom SEM Inspection Image -->
+<div class="relative bg-surface-container-low p-space-md shadow-md flex flex-col gap-space-sm overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-primary-container tracking-widest uppercase">SEM IMAGING STATION #02</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">MAG: 120,000× // TILT: 15°</span>
+</div>
+<div class="relative w-full h-56 overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover opacity-85 hover:scale-105 transition-all duration-500" data-alt="High-resolution scanning electron micrograph (SEM) cross-section of a 3D NAND flash memory die, showing microscopic vertical wordline silicon oxide dielectric channels with an incandescent bright rupture defect in cleanroom monochromatic cyan and deep obsidian tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnERTXm8s0A2blMOP3LUTZNiTycHd3TuWYWLwqoXSyaJK5sI7rkArtxlPDVDrK6Lt8MKlm0Cwjz9xRwuioLYxtiO9ViHFgQUnCYDmw4xseUqAd-lGL2pVdzDan66nhS24S3xufi6W_jUbMMuAsRozc2U0LW-yWieqKfuUnEQsgy34_PpdlwXswTjYS8ftCpcWGXi-Ks-Na-WKCoqqWXrrvqaOa_8Cj7YonpY2zMG6LikmuHlZMIBtrMg"/>
+<div class="absolute bottom-2 left-2 bg-surface-container-lowest/90 px-space-sm py-space-2xs font-label-sm text-label-sm text-error flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-error animate-ping"></span>
+          DIELECTRIC RUPTURE POINT @ BITLINE 1492
+        </div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        FIB-SEM cross section verifies gate oxide thinning in Sector 4B consistent with rapid thermal processing lamp #4 overheating by +12.4°C.
+      </p>
+</div>
+<!-- RTP Rapid Thermal Anneal Chamber Feed -->
+<div class="relative bg-surface-container-low p-space-md shadow-md flex flex-col gap-space-sm overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-primary-fixed tracking-widest uppercase">CHAMBER TELEMETRY FEED</span>
+<span class="font-label-sm text-label-sm text-secondary">RTP-02 PERIMETER PYROMETER</span>
+</div>
+<div class="relative w-full h-56 overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover opacity-85 hover:scale-105 transition-all duration-500" data-alt="Futuristic semiconductor cleanroom chamber with robotic handling arm holding a silicon wafer illuminated by high intensity radiant halogen heating lamps and neon cyan laser alignment beams inside a vacuum processing chamber" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWvicvklzncrKoF7RsII6Zse1_kAuYB9tGbrmvfRPnH9Rn0miD32mqKmT31PbaqBkhwmTT4jfHj7TpDKFPg9pSc4pnHAyLx7M1aMYco69tFWnWG_13svCmEZ6jAn05uDQlJvzlBxK7Y4ZHdgbXRddD8VvukoOtEG-WqSzCIhc4sn3L9wXVgCgq79Um9AGMbv_l2rOAtTw_dEz6AlG3h8udV6i7kz8qiVqL-9sQdnUT7E8TWtnmuj1Khg"/>
+<div class="absolute bottom-2 left-2 bg-surface-container-lowest/90 px-space-sm py-space-2xs font-label-sm text-label-sm text-primary-container flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+          RTP-02 ANNEAL LOGGED: 1,048°C (SPEC: 1,025°C)
+        </div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Thermal pyrometer trace shows edge ring quartz envelope thermal distortion matching Die [31, 07] conformal error margin.
+      </p>
+</div>
+</section>
+<!-- Main Section 3: Die Coordinate Catalog & Batch Inspector -->
+<section class="flex flex-col gap-space-sm bg-surface-container-low p-space-md shadow-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-container text-[20px]">table_rows</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">
+            Quarantined Marginal Dies Catalog
+          </h2>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+          LOT #WD-2026-NAND-8TB // 43 ANOMALOUS DIES IDENTIFIED ON WAFER W_F_0042
+        </span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-space-xs font-label-sm text-label-sm bg-surface-container-high text-on-surface hover:text-primary transition-all flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[14px]">filter_alt</span>
+          FILTER: CRITICAL ONLY
+        </button>
+<button class="px-space-sm py-space-xs font-label-sm text-label-sm bg-surface-container-high text-on-surface hover:text-primary transition-all flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[14px]">file_download</span>
+          BATCH CSV EXPORT
+        </button>
+</div>
+</div>
+<!-- High-Density Quarantined Die Table -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm uppercase">
+<th class="py-space-xs px-space-sm">DIE ID</th>
+<th class="py-space-xs px-space-sm">GRID COORD</th>
+<th class="py-space-xs px-space-sm">POLAR (θ, r)</th>
+<th class="py-space-xs px-space-sm text-right">P(FAIL)</th>
+<th class="py-space-xs px-space-sm text-right">CONFORMAL 90%</th>
+<th class="py-space-xs px-space-sm">PRIMARY BLOCK ANOMALY</th>
+<th class="py-space-xs px-space-sm">ATTRIBUTED CAUSE</th>
+<th class="py-space-xs px-space-sm text-center">ACTION</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-highest font-label-sm text-label-sm">
+<!-- Highlighted Row: Target Die [31, 07] -->
+<tr class="bg-primary/10 text-on-surface hover:bg-primary/15 transition-all">
+<td class="py-space-xs px-space-sm font-bold text-primary flex items-center gap-space-xs">
+<span class="w-2 h-2 bg-error rounded-full animate-ping"></span>
+              DIE_0842
+            </td>
+<td class="py-space-xs px-space-sm font-bold text-primary">[ROW 31, COL 07]</td>
+<td class="py-space-xs px-space-sm text-secondary">274.5°, 144.2mm</td>
+<td class="py-space-xs px-space-sm text-right font-telemetry-num text-error font-bold">0.892</td>
+<td class="py-space-xs px-space-sm text-right font-telemetry-num text-primary-fixed">[0.841, 0.938]</td>
+<td class="py-space-xs px-space-sm text-error">105-Blk Run (+38.4 mV)</td>
+<td class="py-space-xs px-space-sm text-on-surface-variant">RTP Edge Thermal Runaway</td>
+<td class="py-space-xs px-space-sm text-center">
+<div class="flex items-center justify-center gap-space-2xs">
+<button class="px-space-xs py-space-2xs bg-primary-container text-on-primary font-bold hover:brightness-110">
+                  INSPECT
+                </button>
+<button class="px-space-xs py-space-2xs bg-surface-container-highest text-primary hover:bg-surface-bright">
+                  STEP DATA
+                </button>
+<button class="px-space-xs py-space-2xs bg-error text-on-error font-bold hover:brightness-110">
+                  LOCK
+                </button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-surface-container-low hover:bg-surface-container transition-all">
+<td class="py-space-xs px-space-sm font-bold text-on-surface">DIE_0843</td>
+<td class="py-space-xs px-space-sm">[ROW 31, COL 08]</td>
+<td class="py-space-xs px-space-sm text-secondary">272.1°, 142.8mm</td>
+<td class="py-space-xs px-space-sm text-right font-telemetry-num text-error">0.784</td>
+<td class="py-space-xs px-space-sm text-right font-telemetry-num text-secondary-fixed">[0.720, 0.835]</td>
+<td class="py-space-xs px-space-sm text-primary-fixed">64-Blk Run (+22.1 mV)</td>
+<td class="py-space-xs px-space-sm text-on-surface-variant">Thermal Gradient Decay</td>
+<td class="py-space-xs px-space-sm text-center">
+<div class="flex items-center justify-center gap-space-2xs">
+<button class="px-space-xs py-space-2xs bg-surface-container text-on-surface hover:text-primary">
+                  INSPECT
+                </button>
+<button class="px-space-xs py-space-2xs bg-surface-container text-on-surface hover:text-primary">
+                  LOCK
+                </button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container transition-all">
+<td class="py-space-xs px-space-sm font-bold text-on-surface">DIE_0412</td>
+<td class="py-space-xs px-space-sm">[ROW 14, COL 22]</td>
+<td class="py-space-xs px-space-sm text-secondary">114.8°, 88.4mm</td>
+<td class="py-space-xs px-space-sm text-right font-telemetry-num text-primary-fixed">0.612</td>
+<td class="py-space-xs px-space-sm text-right font-telemetry-num text-secondary-fixed">[0.550, 0.672]</td>
+<td class="py-space-xs px-space-sm text-on-surface-variant">Hot Threshold Count (88 blk)</td>
+<td class="py-space-xs px-space-sm text-on-surface-variant">CMP Slurry Micro-scratch</td>
+<td class="py-space-xs px-space-sm text-center">
+<div class="flex items-center justify-center gap-space-2xs">
+<button class="px-space-xs py-space-2xs bg-surface-container text-on-surface hover:text-primary">
+                  INSPECT
+                </button>
+<button class="px-space-xs py-space-2xs bg-surface-container text-on-surface hover:text-primary">
+                  LOCK
+                </button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="bg-surface-container-low hover:bg-surface-container transition-all">
+<td class="py-space-xs px-space-sm font-bold text-on-surface">DIE_0198</td>
+<td class="py-space-xs px-space-sm">[ROW 08, COL 45]</td>
+<td class="py-space-xs px-space-sm text-secondary">42.3°, 139.6mm</td>
+<td class="py-space-xs px-space-sm text-right font-telemetry-num text-secondary">0.542</td>
+<td class="py-space-xs px-space-sm text-right font-telemetry-num text-secondary-fixed">[0.481, 0.604]</td>
+<td class="py-space-xs px-space-sm text-on-surface-variant">High Entropy (2.19 nats)</td>
+<td class="py-space-xs px-space-sm text-on-surface-variant">Photoresist Edge Bead Spill</td>
+<td class="py-space-xs px-space-sm text-center">
+<div class="flex items-center justify-center gap-space-2xs">
+<button class="px-space-xs py-space-2xs bg-surface-container text-on-surface hover:text-primary">
+                  INSPECT
+                </button>
+<button class="px-space-xs py-space-2xs bg-surface-container text-on-surface hover:text-primary">
+                  LOCK
+                </button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container transition-all">
+<td class="py-space-xs px-space-sm font-bold text-on-surface">DIE_0762</td>
+<td class="py-space-xs px-space-sm">[ROW 28, COL 04]</td>
+<td class="py-space-xs px-space-sm text-secondary">255.9°, 146.1mm</td>
+<td class="py-space-xs px-space-sm text-right font-telemetry-num text-error">0.822</td>
+<td class="py-space-xs px-space-sm text-right font-telemetry-num text-secondary-fixed">[0.760, 0.880]</td>
+<td class="py-space-xs px-space-sm text-error">78-Blk Run (+31.4 mV)</td>
+<td class="py-space-xs px-space-sm text-on-surface-variant">RTP Edge Thermal Runaway</td>
+<td class="py-space-xs px-space-sm text-center">
+<div class="flex items-center justify-center gap-space-2xs">
+<button class="px-space-xs py-space-2xs bg-surface-container text-on-surface hover:text-primary">
+                  INSPECT
+                </button>
+<button class="px-space-xs py-space-2xs bg-surface-container text-on-surface hover:text-primary">
+                  LOCK
+                </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Telemetry Summary Footnote -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-xs pt-space-xs font-label-sm text-label-sm text-on-surface-variant">
+<span>SHOWING 5 OF 43 QUARANTINED MARGINAL DIES // WAFER LOT WD-2026</span>
+<div class="flex items-center gap-space-sm">
+<span class="text-primary-container">AUTONOMOUS INTERLOCK ENGAGED: 38 DIES</span>
+<span class="text-error">MANUAL REVIEW: 5 DIES</span>
+</div>
+</div>
+</section>
+<!-- Interactive Script for Micro-HUD Interactions -->
+<script>
+    function setDie(dieCoord) {
+      const btn31 = document.getElementById('die-31-07');
+      const btn14 = document.getElementById('die-14-22');
+      const btn08 = document.getElementById('die-08-45');
+      const readout = document.getElementById('hover-readout');
+
+      // Reset styles
+      [btn31, btn14, btn08].forEach(btn => {
+        if(btn) {
+          btn.className = "px-space-md py-space-xs font-label-sm text-label-sm bg-surface-container-high text-on-surface-variant hover:text-primary transition-all flex items-center gap-space-xs";
+        }
+      });
+
+      if (dieCoord === '31-07') {
+        btn31.className = "px-space-md py-space-xs font-label-sm text-label-sm bg-primary-container text-on-primary font-bold shadow-[0_0_12px_rgba(0,240,255,0.4)] transition-all flex items-center gap-space-xs";
+        readout.innerHTML = "#1504 (ROW 38, COL 14) // Δ+34.2mV";
+        readout.className = "text-primary font-bold";
+      } else if (dieCoord === '14-22') {
+        btn14.className = "px-space-md py-space-xs font-label-sm text-label-sm bg-primary-container text-on-primary font-bold shadow-[0_0_12px_rgba(0,240,255,0.4)] transition-all flex items-center gap-space-xs";
+        readout.innerHTML = "#0842 (ROW 14, COL 22) // Δ+16.8mV";
+        readout.className = "text-secondary-fixed font-bold";
+      } else if (dieCoord === '08-45') {
+        btn08.className = "px-space-md py-space-xs font-label-sm text-label-sm bg-primary-container text-on-primary font-bold shadow-[0_0_12px_rgba(0,240,255,0.4)] transition-all flex items-center gap-space-xs";
+        readout.innerHTML = "#0198 (ROW 08, COL 45) // Δ+11.2mV";
+        readout.className = "text-primary font-bold";
+      }
+    }
+
+    function setTraceZoom(mode) {
+      const btnAll = document.getElementById('zoom-all');
+      const btnCluster = document.getElementById('zoom-cluster');
+      const btnFft = document.getElementById('zoom-fft');
+
+      [btnAll, btnCluster, btnFft].forEach(b => {
+        if (b) b.className = "px-space-xs py-space-2xs bg-surface-container text-on-surface-variant hover:text-primary font-label-sm text-label-sm transition-all";
+      });
+
+      if(mode === 'all' && btnAll) btnAll.className = "px-space-xs py-space-2xs bg-primary text-on-primary font-bold font-label-sm text-label-sm transition-all";
+      if(mode === 'cluster' && btnCluster) btnCluster.className = "px-space-xs py-space-2xs bg-primary/20 text-primary font-label-sm text-label-sm transition-all";
+      if(mode === 'fft' && btnFft) btnFft.className = "px-space-xs py-space-2xs bg-primary text-on-primary font-bold font-label-sm text-label-sm transition-all";
+    }
+
+    // Dynamic Hover interaction on the 50x40 Matrix
+    const matrixSvg = document.getElementById('matrix-svg');
+    const readout = document.getElementById('hover-readout');
+    if (matrixSvg && readout) {
+      matrixSvg.addEventListener('mousemove', function(e) {
+        const rect = matrixSvg.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        if (x > rect.width * 0.6 && y > rect.height * 0.55) {
+          readout.innerHTML = "#1492 (ROW 37, COL 18) // CRITICAL +38.4mV [RUN PEAK]";
+          readout.className = "text-error font-bold";
+        } else {
+          readout.innerHTML = "#0412 (ROW 10, COL 08) // NOMINAL 99.4mV [SAFE]";
+          readout.className = "text-primary font-bold";
+        }
+      });
+      matrixSvg.addEventListener('mouseleave', function() {
+        readout.innerHTML = "#1504 (ROW 38, COL 14) // Δ+34.2mV";
+        readout.className = "text-primary font-bold";
+      });
+    }
+  </script>
+</div></main></div></body></html>

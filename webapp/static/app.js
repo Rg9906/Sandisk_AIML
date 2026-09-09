@@ -970,6 +970,11 @@ async function switchView(name) {
       if (!S.benchmarks) await loadBenchmarks();
       await loadPipeline(); LOADED.pipeline = 1;
     }
+    if (name === 'run' && !LOADED.run) { await loadPresets(); LOADED.run = 1; }
+    if (name === 'fleet' && !LOADED.fleet) { await loadFleet(); LOADED.fleet = 1; }
+    if (name === 'fleet') renderFleet();
+    if (name === 'threshold' && !LOADED.threshold) { await loadThreshold(); LOADED.threshold = 1; }
+    if (name === 'provenance' && !LOADED.provenance) { await loadProvenance(); LOADED.provenance = 1; }
     if (name === 'telemetry') renderTelemetry();
     if (name === 'inspector') { renderInspectorTable(); if (S.die) renderInspectorDetail(S.die); }
     if (name === 'interlock' || name === 'matrix') renderWafer();
@@ -987,6 +992,13 @@ async function boot() {
       `<div class="err">Backend not ready: ${e.message}</div>`;
     return;
   }
+  paintSummary();
+
+  S.wafers = await api('/api/wafers');
+  await bootRest();
+}
+
+function paintSummary() {
   const s = S.summary;
 
   setTxt('chipA', s.model_a ? pf(s.model_a.auc_pr, 4) : '—');
@@ -1002,9 +1014,11 @@ async function boot() {
   setTxt('rfDataset', s.dataset);
   setTxt('brandSub', `Multi-resolution neural yield intelligence · ${s.model}`);
   $('rfMeter').style.width = (100 * s.counts.caught / Math.max(s.counts.new_fail, 1)) + '%';
+}
 
-  S.wafers = await api('/api/wafers');
+async function bootRest() {
   const sel = $('waferSelect'), sel2 = $('inspWafer');
+  sel.innerHTML = ''; sel2.innerHTML = '';
   S.wafers.forEach((w) => {
     const o = document.createElement('option');
     o.value = w.wafer_id;
@@ -1113,3 +1127,446 @@ window.addEventListener('resize', () => {
 });
 
 boot().catch((e) => toast('Boot failed: ' + e.message));
+
+// ==========================================================================
+// LIVE PIPELINE RUNNER
+// ==========================================================================
+const RUN = { job: null, next: 0, timer: null, presets: [] };
+
+const hhmmss = (s) => {
+  s = Math.max(0, Math.round(s));
+  const m = Math.floor(s / 60);
+  return m ? `${m}m ${String(s % 60).padStart(2, '0')}s` : `${s}s`;
+};
+
+async function loadPresets() {
+  const j = await api('/api/jobs');
+  RUN.presets = j.presets;
+  const g = $('presetGrid'); g.innerHTML = '';
+  j.presets.forEach((p) => {
+    const d = document.createElement('div');
+    d.className = 'preset' + (p.demo ? '' : ' heavy');
+    d.dataset.task = p.task;
+    d.innerHTML =
+      `<div class="preset-body"><h3>${p.label}</h3><p>${p.blurb}</p>` +
+      `<code class="cmd">${p.command}</code></div>` +
+      `<div class="preset-foot">` +
+      `<span class="est">measured runtime <b>${hhmmss(p.est)}</b>${p.demo ? '' : ' — not a stage demo'}</span>` +
+      `<button class="btn ${p.demo ? 'primary' : 'ghost'}" data-run="${p.task}">Execute</button></div>`;
+    g.appendChild(d);
+  });
+  g.querySelectorAll('[data-run]').forEach((b) =>
+    b.addEventListener('click', () => startRun(b.dataset.run)));
+  renderHistory(j.recent);
+  if (j.active) attachRun(j.active);
+}
+
+async function startRun(task) {
+  const spec = RUN.presets.find((p) => p.task === task);
+  if (spec && !spec.demo &&
+      !confirm(`${spec.label}\n\nThis takes about ${hhmmss(spec.est)} and retrains on all ` +
+               `200 wafers. It will overwrite results/ and figures/.\n\nStart it?`)) return;
+  try {
+    const j = await api(`/api/jobs/start?task=${encodeURIComponent(task)}`);
+    RUN.next = 0;
+    $('console').innerHTML = '';
+    attachRun(j.id, j);
+    toast(`Started: ${j.label}`);
+  } catch (e) { toast(e.message); }
+}
+
+function attachRun(id, snap) {
+  RUN.job = id;
+  clearInterval(RUN.timer);
+  if (snap) paintRun(snap);
+  RUN.timer = setInterval(pollRun, 600);
+  pollRun();
+}
+
+async function pollRun() {
+  if (!RUN.job) return;
+  let s;
+  try { s = await api(`/api/jobs/${RUN.job}?since=${RUN.next}`); }
+  catch (e) { clearInterval(RUN.timer); toast(e.message); return; }
+  paintRun(s);
+  if (s.status !== 'running') {
+    clearInterval(RUN.timer); RUN.timer = null;
+    $('btnCancel').hidden = true;
+    document.querySelectorAll('.preset').forEach((p) => p.classList.remove('running'));
+    if (s.status === 'done') {
+      toast(`${s.label} finished in ${hhmmss(s.elapsed)} — reloading dashboard`);
+      await refreshFromDisk();
+    } else {
+      toast(`Run ${s.status} (exit ${s.returncode})`);
+    }
+    api('/api/jobs').then((j) => renderHistory(j.recent)).catch(() => {});
+  }
+}
+
+function paintRun(s) {
+  RUN.next = s.next;
+  const running = s.status === 'running';
+
+  const st = $('runState');
+  st.textContent = running ? 'Running' : s.status[0].toUpperCase() + s.status.slice(1);
+  st.className = 'tag ' + (running ? 'cyan' : s.status === 'done' ? 'mint' : 'ruby');
+  $('runLed').className = 'led ' + (running ? 'busy' : s.status === 'done' ? 'on' : 'bad');
+  $('btnCancel').hidden = !running;
+  setTxt('runCmd', s.command);
+  setTxt('runClock', running
+    ? `${hhmmss(s.elapsed)} elapsed · ~${hhmmss(Math.max(0, s.est - s.elapsed))} left`
+    : `${hhmmss(s.elapsed)} total`);
+
+  document.querySelectorAll('.preset').forEach((p) =>
+    p.classList.toggle('running', running && p.dataset.task === s.task));
+
+  // console: append only what is new
+  const box = $('console');
+  if (box.querySelector('.empty')) box.innerHTML = '';
+  const stick = box.scrollTop + box.clientHeight >= box.scrollHeight - 40;
+  s.lines.forEach((l) => {
+    const d = document.createElement('div');
+    let kind = l.kind;
+    if (kind === 'out') {
+      if (/AUC-PR=|VERDICT|complete|wrote /i.test(l.text)) kind = 'hit';
+      else if (/warn|skipped|!!/i.test(l.text)) kind = 'warn';
+      else if (/error|traceback|failed/i.test(l.text)) kind = 'err';
+    }
+    d.className = 'ln ' + kind;
+    d.innerHTML = `<span class="t">${l.t.toFixed(1)}s</span><span class="x"></span>`;
+    d.querySelector('.x').textContent = l.text;
+    box.appendChild(d);
+  });
+  if (stick) box.scrollTop = box.scrollHeight;
+
+  // stage rail
+  const frac = s.stages.length ? s.stage_at / s.stages.length : 0;
+  const bar = $('runBar');
+  bar.style.width = (frac * 100).toFixed(1) + '%';
+  bar.parentElement.classList.toggle('err', s.status === 'failed');
+  const sl = $('stageList'); sl.innerHTML = '';
+  s.stages.forEach((label, i) => {
+    const cls = i < s.stage_at ? 'done' : (i === s.stage_at && running ? 'now' : '');
+    const d = document.createElement('div');
+    d.className = 'stage ' + cls;
+    d.innerHTML = `<span class="pip"></span><span>${label}</span>` +
+      `<span class="n">${i < s.stage_at ? 'done' : i === s.stage_at && running ? 'running' : ''}</span>`;
+    sl.appendChild(d);
+  });
+
+  const m = s.metrics || {};
+  setTxt('rmAuc', m.auc_pr != null ? pf(m.auc_pr) : '—');
+  setTxt('rmF1', m.f1 != null ? pf(m.f1, 3) : '—');
+  setTxt('rmW', m.w_mil != null ? pf(m.w_mil, 2) : '—');
+  setTxt('rmT', hhmmss(s.elapsed));
+}
+
+function renderHistory(rows) {
+  const tb = $('runHistory').querySelector('tbody'); tb.innerHTML = '';
+  if (!rows || !rows.length) {
+    tb.innerHTML = '<tr><td colspan="5" style="color:var(--tx-dim)">No runs yet this session.</td></tr>';
+    return;
+  }
+  rows.forEach((r) => {
+    const tr = document.createElement('tr');
+    const col = r.status === 'done' ? 'var(--mint)'
+      : r.status === 'running' ? 'var(--cyan)' : 'var(--ruby)';
+    tr.innerHTML = `<td style="color:var(--tx-dim)">${r.id}</td><td>${r.label}</td>` +
+      `<td style="color:${col}">${r.status.toUpperCase()}</td>` +
+      `<td class="r">${hhmmss(r.elapsed)}</td>` +
+      `<td class="r">${r.metrics && r.metrics.auc_pr != null ? pf(r.metrics.auc_pr) : '—'}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+/** After a run writes new artifacts, pull everything through again. */
+async function refreshFromDisk() {
+  try {
+    await api('/api/reload');
+    S.summary = await api('/api/summary');
+    S.wafers = await api('/api/wafers');
+    S.benchmarks = null; LOADED.bench = 0; LOADED.spatial = 0;
+    LOADED.pipeline = 0; LOADED.fleet = 0; LOADED.threshold = 0;
+    paintSummary();
+    await loadWafer(S.wafer ? S.wafer.wafer_id : S.wafers[0].wafer_id);
+    await loadBenchmarks(); LOADED.bench = 1;
+    await loadEconomics();
+    toast('Dashboard reloaded from the artifacts that run just wrote.');
+  } catch (e) { toast('Reload failed: ' + e.message); }
+}
+
+// ==========================================================================
+// FLEET WALL
+// ==========================================================================
+const FLEET = { data: [], mode: 'risk', sort: 'new_fail' };
+
+async function loadFleet() {
+  FLEET.data = await api('/api/fleet');
+  renderFleet();
+}
+
+function renderFleet() {
+  const g = $('fleetGrid'); g.innerHTML = '';
+  const key = FLEET.sort;
+  const rows = [...FLEET.data].sort((a, b) =>
+    key === 'wafer_id' ? a.wafer_id.localeCompare(b.wafer_id) : (b[key] || 0) - (a[key] || 0));
+
+  rows.forEach((w) => {
+    const card = document.createElement('div');
+    card.className = 'fleet-card' + (S.wafer && S.wafer.wafer_id === w.wafer_id ? ' on' : '');
+    const cv = document.createElement('canvas');
+    const px = 4;
+    cv.width = w.cols * px; cv.height = w.rows * px;
+    const g2 = cv.getContext('2d');
+    g2.fillStyle = 'rgba(8,14,26,.9)'; g2.fillRect(0, 0, cv.width, cv.height);
+    for (let i = 0; i < w.state.length; i++) {
+      const r = Math.floor(i / w.cols), c = i % w.cols;
+      let fill;
+      if (FLEET.mode === 'truth') {
+        fill = w.state[i] === 2 ? '#8C2230' : w.state[i] === 1 ? C.newfail
+             : (w.risk[i] == null ? 'transparent' : '#1E6F8C');
+      } else {
+        fill = w.state[i] === 2 ? 'rgba(120,20,40,.5)'
+             : (w.risk[i] == null ? 'transparent' : riskColor(w.risk[i]));
+      }
+      if (fill === 'transparent') continue;
+      g2.fillStyle = fill; g2.fillRect(c * px, r * px, px, px);
+    }
+    card.appendChild(cv);
+    card.insertAdjacentHTML('beforeend',
+      `<div class="id"><span>${w.wafer_id}</span><b>${nf(w.new_fail)}</b></div>` +
+      `<div class="sub"><span>${pct(w.fail_rate, 1)} fail</span>` +
+      `<span>${nf(w.caught)}/${nf(w.new_fail)} caught</span></div>`);
+    card.title = `${w.wafer_id} — ${nf(w.eligible)} eligible, ${nf(w.new_fail)} new failures, ` +
+                 `${nf(w.flagged)} flagged, peak risk ${pf(w.max_risk, 3)}`;
+    card.onclick = () => {
+      $('waferSelect').value = w.wafer_id;
+      $('inspWafer').value = w.wafer_id;
+      setTxt('chipLot', w.wafer_id);
+      loadWafer(w.wafer_id).then(() => { switchView('matrix'); }).catch((e) => toast(e.message));
+    };
+    g.appendChild(card);
+  });
+}
+
+// ==========================================================================
+// THRESHOLD STUDIO
+// ==========================================================================
+const TH = { p: null, y: null, shipped: 0, base: 0, pr: null };
+
+async function loadThreshold() {
+  const d = await api('/api/scores');
+  TH.p = Float64Array.from(d.p);
+  TH.y = Int8Array.from(d.y);
+  TH.shipped = d.shipped_threshold;
+  TH.base = d.base_rate;
+  setTxt('thN', nf(d.n));
+  setTxt('thAllPass', pct(1 - d.base_rate, 2));
+  setTxt('thShippedMark', `shipped ${pf(d.shipped_threshold, 3)}`);
+
+  // Precompute the PR curve once so dragging only moves the marker.
+  const idx = Array.from(TH.p.keys()).sort((a, b) => TH.p[b] - TH.p[a]);
+  const pts = []; let tp = 0, fp = 0;
+  const pos = TH.y.reduce((s, v) => s + v, 0);
+  for (let i = 0; i < idx.length; i++) {
+    TH.y[idx[i]] ? tp++ : fp++;
+    if (i % 40 === 0 || i === idx.length - 1) pts.push([tp / pos, tp / (tp + fp)]);
+  }
+  TH.pr = pts;
+
+  $('thSlider').value = Math.round(TH.shipped * 1000);
+  applyThreshold();
+}
+
+function applyThreshold() {
+  if (!TH.p) return;
+  const t = Number($('thSlider').value) / 1000;
+  setTxt('thVal', pf(t, 3));
+
+  let tp = 0, fp = 0, fn = 0, tn = 0;
+  for (let i = 0; i < TH.p.length; i++) {
+    const flag = TH.p[i] >= t, fail = TH.y[i] === 1;
+    if (flag && fail) tp++; else if (flag) fp++; else if (fail) fn++; else tn++;
+  }
+  const n = TH.p.length;
+  const recall = tp / Math.max(tp + fn, 1);
+  const prec = tp / Math.max(tp + fp, 1);
+  const f1 = (prec + recall) ? (2 * prec * recall) / (prec + recall) : 0;
+  const scrap = (tp + fp) / n;
+
+  setTxt('thRecall', pct(recall, 1));
+  setTxt('thRecallN', `${nf(tp)} of ${nf(tp + fn)} real failures`);
+  setTxt('thPrec', pct(prec, 1));
+  setTxt('thPrecN', `${nf(tp)} of ${nf(tp + fp)} flagged really failed`);
+  setTxt('thF1', pf(f1, 3));
+  setTxt('thScrap', pct(scrap, 2));
+  setTxt('thScrapN', `${nf(tp + fp)} dies pulled off the line`);
+  setTxt('thTN', nf(tn)); setTxt('thFP', nf(fp));
+  setTxt('thFN', nf(fn)); setTxt('thTP', nf(tp));
+  setTxt('thAcc', pct((tp + tn) / n, 2));
+  setTxt('thDppm', nf(Math.round(1e6 * fn / n)));
+
+  drawXY($('thPr'), [
+    { points: TH.pr, color: C.cyan, width: 2 },
+    { points: [[0, TH.base], [1, TH.base]], color: C.dim, dashed: true },
+  ], {
+    xLabel: 'Recall', yLabel: 'Precision', xDec: 2, yDec: 2,
+    marker: [recall, prec], markerLabel: `cut ${pf(t, 3)}`,
+    legend: [{ color: C.cyan, label: 'Model B' }, { color: C.dim, label: 'all-pass' }],
+  });
+}
+
+// ==========================================================================
+// PROVENANCE
+// ==========================================================================
+async function loadProvenance(fresh) {
+  const box = $('provList');
+  box.innerHTML = '<div class="empty">Running checks against the files on disk…</div>';
+  let d;
+  try { d = await api('/api/provenance' + (fresh ? '?fresh=1' : '')); }
+  catch (e) { box.innerHTML = `<div class="err">${e.message}</div>`; return; }
+
+  const ok = d.passed === d.total;
+  const s = $('provScore');
+  s.textContent = `${d.passed} / ${d.total} checks pass`;
+  s.className = 'tag ' + (ok ? 'mint' : 'ruby');
+  $('provLed').className = 'led ' + (ok ? 'on' : 'bad');
+
+  box.innerHTML = '';
+  d.checks.forEach((c) => {
+    const el2 = document.createElement('div');
+    el2.className = 'check ' + (c.ok ? 'ok' : 'bad');
+    el2.innerHTML =
+      `<span class="material-symbols-outlined ms">${c.ok ? 'check_circle' : 'cancel'}</span>` +
+      `<div class="body"><h4>${c.name}</h4><p>${c.detail}</p>` +
+      `<code class="ev">${c.evidence || '—'}</code></div>`;
+    box.appendChild(el2);
+  });
+}
+
+// ==========================================================================
+// COMMAND PALETTE
+// ==========================================================================
+const PAL_VIEWS = [
+  ['run', 'Live Pipeline Run', 'play_circle'],
+  ['matrix', 'Live Wafer Matrix', 'grid_on'],
+  ['fleet', 'Wafer Fleet Wall', 'dashboard'],
+  ['threshold', 'Threshold Studio', 'tune'],
+  ['inspector', 'Die Micro-Inspector', 'biotech'],
+  ['spatial', 'Spatial Anomaly Maps', 'scatter_plot'],
+  ['telemetry', '2000-Block Telemetry', 'graphic_eq'],
+  ['bench', 'AUC-PR Benchmarks', 'bar_chart'],
+  ['interlock', 'Robotics Interlock', 'precision_manufacturing'],
+  ['pipeline', 'A–Z Pipeline & Architecture', 'account_tree'],
+  ['provenance', 'Data Provenance', 'verified_user'],
+];
+
+function buildPalette() {
+  const wrap = document.createElement('div');
+  wrap.className = 'palette'; wrap.id = 'palette';
+  wrap.innerHTML =
+    '<div class="palette-box"><input id="palInput" placeholder="Jump to a view or a wafer…" ' +
+    'autocomplete="off" spellcheck="false"><div class="palette-list" id="palList"></div></div>';
+  document.body.appendChild(wrap);
+  wrap.addEventListener('click', (e) => { if (e.target === wrap) closePalette(); });
+  $('palInput').addEventListener('input', paintPalette);
+  $('palInput').addEventListener('keydown', palKey);
+}
+
+let palSel = 0, palRows = [];
+function palItems(q) {
+  q = q.trim().toLowerCase();
+  const out = PAL_VIEWS
+    .filter(([, label]) => !q || label.toLowerCase().includes(q))
+    .map(([id, label, icon]) => ({ icon, label, hint: 'view', act: () => switchView(id) }));
+  S.wafers.filter((w) => !q || w.wafer_id.toLowerCase().includes(q))
+    .slice(0, q ? 8 : 4)
+    .forEach((w) => out.push({
+      icon: 'album', label: w.wafer_id,
+      hint: `${w.new_fail} new fails`,
+      act: () => {
+        $('waferSelect').value = w.wafer_id; $('inspWafer').value = w.wafer_id;
+        setTxt('chipLot', w.wafer_id);
+        loadWafer(w.wafer_id).then(() => switchView('matrix'));
+      },
+    }));
+  return out.slice(0, 12);
+}
+function paintPalette() {
+  palRows = palItems($('palInput').value);
+  palSel = 0;
+  const l = $('palList'); l.innerHTML = '';
+  palRows.forEach((r, i) => {
+    const d = document.createElement('div');
+    d.className = 'palette-item' + (i === palSel ? ' sel' : '');
+    d.innerHTML = `<span class="material-symbols-outlined ms">${r.icon}</span>` +
+      `<span>${r.label}</span><span class="hint">${r.hint}</span>`;
+    d.onclick = () => { closePalette(); r.act(); };
+    l.appendChild(d);
+  });
+}
+function palKey(e) {
+  if (e.key === 'Escape') return closePalette();
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    palSel = (palSel + (e.key === 'ArrowDown' ? 1 : -1) + palRows.length) % palRows.length;
+    [...$('palList').children].forEach((c, i) => c.classList.toggle('sel', i === palSel));
+  } else if (e.key === 'Enter' && palRows[palSel]) {
+    closePalette(); palRows[palSel].act();
+  }
+}
+function openPalette() {
+  $('palette').classList.add('on');
+  $('palInput').value = ''; paintPalette(); $('palInput').focus();
+}
+function closePalette() { $('palette').classList.remove('on'); }
+
+// ==========================================================================
+// WIRING
+// ==========================================================================
+$('btnCancel').addEventListener('click', async () => {
+  if (!RUN.job) return;
+  try { await api(`/api/jobs/${RUN.job}/cancel`); toast('Cancel signal sent.'); }
+  catch (e) { toast(e.message); }
+});
+
+document.querySelectorAll('#fleetMode button').forEach((b) =>
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#fleetMode button').forEach((x) => x.classList.remove('on'));
+    b.classList.add('on'); FLEET.mode = b.dataset.fmode; renderFleet();
+  }));
+$('fleetSort').addEventListener('change', (e) => { FLEET.sort = e.target.value; renderFleet(); });
+
+$('thSlider').addEventListener('input', applyThreshold);
+$('btnShipped').addEventListener('click', () => {
+  $('thSlider').value = Math.round(TH.shipped * 1000); applyThreshold();
+  toast(`Snapped to the shipped operating point, ${pf(TH.shipped, 3)}.`);
+});
+$('btnMaxF1').addEventListener('click', () => {
+  if (!TH.p) return;
+  let best = 0, bt = 0;
+  for (let q = 1; q < 1000; q += 1) {
+    const t = q / 1000;
+    let tp = 0, fp = 0, fn = 0;
+    for (let i = 0; i < TH.p.length; i++) {
+      const f = TH.p[i] >= t, y = TH.y[i] === 1;
+      if (f && y) tp++; else if (f) fp++; else if (y) fn++;
+    }
+    const pr = tp / Math.max(tp + fp, 1), rc = tp / Math.max(tp + fn, 1);
+    const f1 = (pr + rc) ? (2 * pr * rc) / (pr + rc) : 0;
+    if (f1 > best) { best = f1; bt = t; }
+  }
+  $('thSlider').value = Math.round(bt * 1000); applyThreshold();
+  toast(`Best F1 on the test set is ${pf(best, 3)} at a cut of ${pf(bt, 3)}.`);
+});
+
+$('btnRecheck').addEventListener('click', () => loadProvenance(true));
+
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    $('palette').classList.contains('on') ? closePalette() : openPalette();
+  }
+});
+
+buildPalette();

@@ -186,6 +186,14 @@ def main() -> None:
     enrich_with_root_cause(preds, X_te, idx_te)
 
     # Attach calibrated probability and conformal interval to the contract objects.
+    #
+    # `p_fail` becomes the CALIBRATED probability while `thr_best` was tuned on the RAW
+    # score, so the two are no longer on the same scale. Any consumer that thresholds
+    # p_fail with thr_best silently under-counts flags. Isotonic regression is monotone,
+    # so pushing the threshold through the same calibrator gives the exact equivalent cut
+    # on the calibrated scale; we store it next to the raw one and let y_pred stay the
+    # authority. Without this the dashboard reported recall 0.368 against the true 0.446.
+    thr_cal = float(iso.predict(np.array([thr_best]))[0])
     for k, p in enumerate(preds):
         p.p_fail = float(p_cal[k])
         p.conformal_lo, p.conformal_hi = float(lo[k]), float(hi[k])
@@ -352,7 +360,8 @@ Head-to-head at each method's own cost-optimal threshold (cost ratio 100):
 
     with (OUT / f"preds_{args.dataset}.pkl").open("wb") as fh:
         pickle.dump({"preds": preds,
-                     "metrics": {**m_b, "threshold": float(thr_best)},
+                     "metrics": {**m_b, "threshold": float(thr_best),
+                                 "threshold_calibrated": thr_cal},
                      "model": f"Model B ({best_name})", "wave": 3}, fh)
 
     print("\n" + "=" * 70)

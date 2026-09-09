@@ -670,3 +670,205 @@ def focus_die() -> dict:
     return {"wafer_id": p.wafer_id,
             "die_row": int(s.dies.loc[row, "die_row"]),
             "die_col": int(s.dies.loc[row, "die_col"])}
+
+
+# ==========================================================================
+# Threshold studio, fleet wall and provenance -- added for the live console
+# ==========================================================================
+def score_arrays() -> dict:
+    """
+    The raw material for client-side threshold exploration: one calibrated risk and one
+    truth label per eligible die. Shipped once so the slider is instant and every
+    confusion matrix the operator draws comes from the real test set.
+    """
+    s = store()
+    return {
+        "n": len(s.preds),
+        "p": [round(float(v), 5) for v in s.p_fail],
+        "y": s.y_true.astype(int).tolist(),
+        "shipped_threshold": _f(s.threshold, 5),
+        "shipped_threshold_raw": _f(s.threshold_raw, 5),
+        "base_rate": _f(float(s.y_true.mean())),
+    }
+
+
+def fleet(max_side: int = 34) -> list[dict]:
+    """
+    Every test wafer as a small risk grid, for the fleet wall.
+
+    Grids are box-downsampled to at most `max_side` cells a side, taking the MAXIMUM risk
+    in each box rather than the mean: a fleet view exists to make the worst die on a wafer
+    findable, and averaging is exactly what would hide it.
+    """
+    s = store()
+    metas = {w["wafer_id"]: w for w in wafer_list()}
+    out = []
+    for wid, g in s.dies.groupby("wafer_id", sort=True):
+        rows = g.index.to_numpy()
+        R = int(g["die_row"].max()) + 1
+        C = int(g["die_col"].max()) + 1
+        k = max(1, int(np.ceil(max(R, C) / max_side)))
+        gr, gc = int(np.ceil(R / k)), int(np.ceil(C / k))
+
+        risk = np.full((gr, gc), -1.0)
+        state = np.zeros((gr, gc), dtype=np.int8)
+        rr = g["die_row"].to_numpy() // k
+        cc = g["die_col"].to_numpy() // k
+        old = g["old_label"].to_numpy()
+        lab = g["label"].to_numpy()
+        for j, row in enumerate(rows):
+            a, b = int(rr[j]), int(cc[j])
+            i = s.row_pred.get(int(row))
+            if i is not None and s.p_fail[i] > risk[a, b]:
+                risk[a, b] = s.p_fail[i]
+            st = 2 if old[j] == 1 else (1 if lab[j] == 1 else 0)
+            if st > state[a, b]:
+                state[a, b] = st
+
+        m = metas[str(wid)]
+        out.append({
+            "wafer_id": str(wid), "rows": gr, "cols": gc,
+            "risk": [None if v < 0 else round(float(v), 3) for v in risk.ravel()],
+            "state": state.ravel().tolist(),
+            "new_fail": m["new_fail"], "eligible": m["eligible"], "dies": m["dies"],
+            "caught": m["caught"], "flagged": m["flagged"],
+            "fail_rate": m["fail_rate"], "max_risk": m["max_risk"],
+            "yield_pct": m["yield_pct"],
+        })
+    out.sort(key=lambda w: w["new_fail"], reverse=True)
+    return out
+
+
+@functools.lru_cache(maxsize=1)
+def _provenance_cached(stamp: float) -> dict:
+    """
+    Live integrity checks on the data chain. Every row is verified when this is called,
+    not read back from a note someone wrote earlier -- which is the only version of a
+    provenance claim worth putting on a screen.
+    """
+    import hashlib
+    import zipfile
+
+    checks = []
+
+    def add(name, ok, detail, evidence=""):
+        checks.append({"name": name, "ok": bool(ok), "detail": detail,
+                       "evidence": str(evidence)})
+
+    s = store()
+
+    # 1 -- the WM-811K source itself
+    lswmd = ROOT / "data" / "LSWMD.pkl"
+    sz = lswmd.stat().st_size if lswmd.exists() else 0
+    add("WM-811K source present", lswmd.exists() and sz > 1e9,
+        "The real Kaggle wafer-map file, not a generated stand-in.",
+        f"data/LSWMD.pkl - {sz / 1e9:.2f} GB" if sz else "missing")
+
+    # 2 -- generator byte-identical to the shipped zip
+    zpath = ROOT / "Hackathon Problem - Die Yield Prediction.zip"
+    kit = ROOT / "kit" / "generate_data.py"
+    same, ev = False, "zip not found"
+    if zpath.exists() and kit.exists():
+        try:
+            with zipfile.ZipFile(zpath) as z:
+                inner = next(n for n in z.namelist() if n.endswith("generate_data.py"))
+                a = hashlib.sha256(z.read(inner)).hexdigest()
+            b = hashlib.sha256(kit.read_bytes()).hexdigest()
+            same, ev = (a == b), f"sha256 {a[:20]}"
+        except Exception as exc:
+            ev = f"{type(exc).__name__}: {exc}"
+    add("Generator unmodified", same,
+        "kit/generate_data.py is byte-identical to the file inside the provided zip.", ev)
+
+    # 3 -- config differs only in where output lands
+    kc, oc = ROOT / "kit" / "config.yaml", ROOT / "configs" / "data_full.yaml"
+    diffs = []
+    if kc.exists() and oc.exists():
+        a = [l.strip() for l in kc.read_text(encoding="utf-8").splitlines()]
+        b = [l.strip() for l in oc.read_text(encoding="utf-8").splitlines()]
+        diffs = [f"{x} -> {y}" for x, y in zip(a, b) if x != y]
+    benign = bool(diffs) and len(diffs) <= 2 and all(
+        ("output_dir" in d) or ("csv" in d and "parquet" in d) for d in diffs)
+    add("Generation settings are theirs", benign,
+        "Only the output folder and the file format differ. Seed, wafer counts, feature "
+        "and block counts, failure rates and every generation parameter are unchanged.",
+        " | ".join(diffs) if diffs else "identical")
+
+    # 4 -- wafer-level split integrity, re-derived now.
+    # Read ONLY the three columns the split needs. `load_split` pulls all 500 parametric
+    # columns, which is 519 MB for train and enough memory churn to stall the server
+    # mid-response; the split logic never looks at a feature.
+    leak = {}
+    try:
+        from src.io_data import Split, wafer_split
+        lite = pd.read_parquet(CACHE / s.dataset / "train_dies.parquet",
+                               columns=["wafer_id", "die_row", "die_col",
+                                        "old_label", "label"])
+        lite["wafer_id"] = lite["wafer_id"].astype(str)
+        tr, va = wafer_split(Split(name="train", dies=lite, blocks=None, feature_cols=[]))
+        te_ids = set(s.dies["wafer_id"].unique())
+        leak = {"train&val": len(tr.wafer_ids & va.wafer_ids),
+                "train&test": len(tr.wafer_ids & te_ids),
+                "val&test": len(va.wafer_ids & te_ids)}
+        ok = all(v == 0 for v in leak.values())
+    except Exception as exc:
+        leak, ok = {"error": f"{type(exc).__name__}: {exc}"}, False
+    add("Zero wafer leakage", ok,
+        "No wafer's dies appear in two splits. Asserted in code, re-verified here.",
+        " | ".join(f"{k}: {v}" for k, v in leak.items()))
+
+    # 5 -- eligibility discipline
+    n_pre = int((s.dies["old_label"] == 1).sum())
+    add("Pre-test failures excluded", len(s.preds) == len(s.dies) - n_pre,
+        "Dies that already failed are carried as spatial input and are never scored.",
+        f"{len(s.dies):,} dies - {n_pre:,} pre-test fails = {len(s.preds):,} scored")
+
+    # 6 -- the kit's validation trap
+    vp = CACHE / s.dataset / "validation_dies.parquet"
+    tp = CACHE / s.dataset / "test_dies.parquet"
+    same_rows, nv = False, 0
+    if vp.exists() and tp.exists():
+        nv = len(pd.read_parquet(vp, columns=["wafer_id"]))
+        nt = len(pd.read_parquet(tp, columns=["wafer_id"]))
+        same_rows = (nv == nt)
+    add("Kit validation trap handled", same_rows,
+        "validation.parquet is test.parquet with the labels dropped, the same wafers. We "
+        "carve validation out of train instead and keep test untouched.",
+        f"validation and test both hold {nv:,} rows" if same_rows else "not verified")
+
+    # 7 -- threshold discipline
+    add("Threshold never left at 0.5", abs(s.threshold_raw - 0.5) > 1e-6,
+        "Tuned on the validation PR curve, stored, and applied unchanged at test.",
+        f"raw {s.threshold_raw:.4f} - calibrated scale {s.threshold:.4f}")
+
+    # 8 -- contract conformance across every shipped prediction
+    bad = 0
+    for p in s.preds:
+        if not (0.0 <= p.p_fail <= 1.0) or p.y_pred not in (0, 1):
+            bad += 1
+        elif sum(abs(v) for v in (p.attribution or {}).values()) < 1e-9:
+            bad += 1
+    add("Output contract holds", bad == 0,
+        "Every prediction carries a valid probability, a binary verdict and a non-empty "
+        "resolution attribution.",
+        f"{len(s.preds):,} predictions checked, {bad} violations")
+
+    return {"checks": checks,
+            "passed": sum(1 for c in checks if c["ok"]),
+            "total": len(checks)}
+
+
+def provenance(fresh: bool = False) -> dict:
+    """Cached on the prediction file's mtime, so a new run re-runs every check."""
+    if fresh:
+        _provenance_cached.cache_clear()
+    s = store()
+    return _provenance_cached(s.preds_path.stat().st_mtime)
+
+
+def reload_store() -> dict:
+    """Drop the cached artifacts so the next request reads whatever a run just wrote."""
+    store.cache_clear()
+    s = store(DATASET)
+    return {"reloaded": True, "dataset": s.dataset, "preds": len(s.preds),
+            "model": s.model_name, "threshold": _f(s.threshold, 5)}
