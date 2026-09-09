@@ -1530,6 +1530,22 @@ $('btnCancel').addEventListener('click', async () => {
   catch (e) { toast(e.message); }
 });
 
+document.querySelectorAll('#mapMode button').forEach((b) =>
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#mapMode button').forEach((x) => x.classList.remove('on'));
+    b.classList.add('on');
+    const mode = b.dataset.mode;
+    if (mode === 'grid') {
+      const el = $('mapRow'); if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else if (mode === 'radar') {
+      const el = $('cvRisk'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (mode === 'iso3d') {
+      const el = $('deck-iso3d'); if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else if (mode === 'delta') {
+      const el = $('deck-delta'); if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }));
+
 document.querySelectorAll('#fleetMode button').forEach((b) =>
   b.addEventListener('click', () => {
     document.querySelectorAll('#fleetMode button').forEach((x) => x.classList.remove('on'));
