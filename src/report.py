@@ -59,7 +59,11 @@ def main() -> None:
     ap.add_argument("--mil-budget", type=float, default=1500.0)
     ap.add_argument("--skip-mil", action="store_true")
     ap.add_argument("--retrain", action="store_true",
-                    help="Force a fresh training run even if a saved model cache exists.")
+                    help="(deprecated, now the default) train fresh")
+    ap.add_argument("--use-cache", action="store_true",
+                    help="Reuse results/model_cache_<dataset>.pkl instead of training. "
+                         "Only safe when neither the code nor the data has changed since "
+                         "it was written.")
     args = ap.parse_args()
 
     t0 = time.time()
@@ -75,16 +79,21 @@ def main() -> None:
     # ---------------------------------------------------- model cache (save / load)
     _cache_path = OUT / f"model_cache_{args.dataset}.pkl"
 
-    if _cache_path.exists() and not args.retrain:
+    # The cache is OPT-IN, not opt-out. Loading trained models by default cost us real
+    # time: after changing a feature we re-ran the report four times and got byte-identical
+    # numbers, because every run silently loaded models trained before the change. A cache
+    # keyed only on the dataset NAME cannot know that the code or the data moved, so the
+    # safe default is to train, and the fast path has to be asked for explicitly.
+    if _cache_path.exists() and args.use_cache:
         print(f"\n  [CACHE] loading trained models from {_cache_path}")
-        print("  [CACHE] skip training entirely -- pass --retrain to force a fresh run")
+        print("  [CACHE] WARNING: these models may predate your current code or data.")
         with _cache_path.open("rb") as _fh:
             _cache = pickle.load(_fh)
         res = _cache["res"]
         print(f"  [CACHE] loaded in {time.time() - t0:.1f}s")
     else:
-        if args.retrain and _cache_path.exists():
-            print("  [CACHE] --retrain flag set -- ignoring existing cache, training fresh")
+        if _cache_path.exists():
+            print("  [CACHE] existing cache ignored (pass --use-cache to reuse it)")
         # -------------------------------------------- Tier 1 vs Tier 2
         res = compare_block_encoders(train, val, test, epochs=args.epochs,
                                      time_budget_s=0 if args.skip_mil else args.mil_budget)

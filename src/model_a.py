@@ -50,13 +50,20 @@ class FeatureBundle:
 
 # ------------------------------------------------------- transductive wafer prior
 WAFER_AGG_COLS = ["sp_wprior_mean", "sp_wprior_p90", "sp_wprior_max",
-                  "sp_wprior_std", "sp_wprior_frac_hi", "sp_wprior_n",
-                  "sp_die_vs_wafer_gap"]
+                  "sp_wprior_std", "sp_wprior_frac_hi", "sp_wprior_n"]
+
+# REMOVED: "sp_die_vs_wafer_gap" (die_anom_score - sp_wprior_mean).
+# The idea is right -- it makes "risky relative to this wafer" an explicit feature -- but
+# measured, it is a distribution-shift trap. `die_anom_score` has train sd 1.30 against
+# test sd 2.03, so the gap inherits a 1.5x scale change between fit and inference.
+# LightGBM is scale-invariant and only lost 0.008 AUC-PR; the MIL encoder standardises
+# its inputs with TRAIN statistics and collapsed from 0.5694 to 0.3200 on test while its
+# validation score stayed at 0.56. A val/test gap that large is the signature of a
+# feature whose distribution moves, not of overfitting.
 
 
 def wafer_aggregates(dies: pd.DataFrame, scores: np.ndarray,
-                     eligible: np.ndarray,
-                     die_anom: np.ndarray | None = None) -> pd.DataFrame:
+                     eligible: np.ndarray) -> pd.DataFrame:
     """
     Summarise a wafer's stage-1 risk scores and broadcast them back to its dies.
 
@@ -81,15 +88,10 @@ def wafer_aggregates(dies: pd.DataFrame, scores: np.ndarray,
         rows = w.index.to_numpy()
         el_rows = rows[eligible[rows]]
         s = scores[el_rows] if len(el_rows) else np.zeros(1, dtype=np.float32)
-        out.iloc[rows, 0:6] = np.array([
+        out.iloc[rows] = np.array([
             s.mean(), np.percentile(s, 90), s.max(), s.std(),
             float((s > hi).mean()), float(len(el_rows)),
         ], dtype=np.float32)
-
-    if die_anom is not None:
-        out["sp_die_vs_wafer_gap"] = (die_anom - out["sp_wprior_mean"].to_numpy()).astype(np.float32)
-    else:
-        out["sp_die_vs_wafer_gap"] = 0.0
     return out
 
 
@@ -223,15 +225,13 @@ class WaferLensModel:
         # Full fit for inference on unseen wafers.
         self.stage1_ = LGBMClassifier(**self.params).fit(X_el, y_tr)
 
-        die_anom = X_all["die_anom_score"].to_numpy() if "die_anom_score" in X_all.columns else None
-        W = wafer_aggregates(train.dies.reset_index(drop=True), oof, el_tr, die_anom=die_anom)
+        W = wafer_aggregates(train.dies.reset_index(drop=True), oof, el_tr)
         return pd.concat([X_all.reset_index(drop=True), W], axis=1)
 
     def _apply_stage1(self, split: Split, X_all: pd.DataFrame) -> pd.DataFrame:
         """Score a split with stage 1 and append its wafer-prior features."""
         p1 = self.stage1_.predict_proba(X_all[self.stage1_columns_])[:, 1]
-        die_anom = X_all["die_anom_score"].to_numpy() if "die_anom_score" in X_all.columns else None
-        W = wafer_aggregates(split.dies.reset_index(drop=True), p1, split.eligible, die_anom=die_anom)
+        W = wafer_aggregates(split.dies.reset_index(drop=True), p1, split.eligible)
         return pd.concat([X_all.reset_index(drop=True), W], axis=1)
 
     # ------------------------------------------------------------------ predict
