@@ -130,10 +130,13 @@ class MILBlockModel:
         pos_weight = torch.tensor([(len(y) - y.sum()) / max(y.sum(), 1)], dtype=torch.float32)
         loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
         opt = torch.optim.Adam(self.net.parameters(), lr=self.lr, weight_decay=1e-5)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=self.epochs, eta_min=1e-5)
 
         n = len(y)
         rng = np.random.default_rng(self.seed)
         t0 = time.time()
+        best_val_auc = -1.0
+        best_state = None
 
         for epoch in range(self.epochs):
             self.net.train()
@@ -151,13 +154,19 @@ class MILBlockModel:
                 opt.step()
                 total += loss.detach().item() * len(sel)
 
+            scheduler.step()
+
             rec = {"epoch": epoch + 1, "train_loss": total / n,
                    "elapsed_s": round(time.time() - t0, 1)}
             if val is not None:
                 from sklearn.metrics import average_precision_score
                 vb, vx, vy, vr = val
                 p = self.predict_proba(vb, vx, vr)
-                rec["val_auc_pr"] = float(average_precision_score(vy, p))
+                val_auc = float(average_precision_score(vy, p))
+                rec["val_auc_pr"] = val_auc
+                if val_auc > best_val_auc:
+                    best_val_auc = val_auc
+                    best_state = {k: v.cpu().clone() for k, v in self.net.state_dict().items()}
             self.history_.append(rec)
             print(f"    epoch {rec['epoch']:>2}  loss={rec['train_loss']:.4f}"
                   + (f"  val AUC-PR={rec['val_auc_pr']:.4f}" if "val_auc_pr" in rec else "")
@@ -167,6 +176,10 @@ class MILBlockModel:
             if time.time() - t0 > self.time_budget_s:
                 print(f"    time budget {self.time_budget_s:.0f}s reached -- stopping early")
                 break
+
+        if best_state is not None:
+            self.net.load_state_dict(best_state)
+            print(f"    [Checkpoint] restored peak validation epoch (val AUC-PR={best_val_auc:.4f})")
         return self
 
     # ---------------------------------------------------------------- predict
