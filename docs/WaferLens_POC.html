@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WaferLens — Proof of Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#FFFFFF;
+  --tint:#F4F6F8;
+  --tint-2:#EAEEF2;
+  --ink:#101820;
+  --body:#28323D;
+  --muted:#5C6B7A;
+  --rule:#D3DBE3;
+  --rule-soft:#E6EBF0;
+  --accent:#0E5C6B;
+  --accent-tint:#E4F0F2;
+  --ok:#1B6B45;
+  --ok-tint:#E6F2EC;
+  --warn:#8A5A00;
+  --warn-tint:#FBF1DF;
+  --crit:#9E1B32;
+  --crit-tint:#FAE9EC;
+  --f-head:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Serif",Georgia,serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{
+  margin:0;background:var(--tint);color:var(--body);
+  font-family:var(--f-body);font-size:10.4pt;line-height:1.55;
+}
+.page{
+  max-width:210mm;margin:0 auto;background:var(--paper);
+  padding:20mm 18mm 18mm;box-shadow:0 2px 28px rgba(16,24,32,.12);
+}
+
+/* ---------------------------------------------------------------- type -- */
+h1,h2,h3,h4{font-family:var(--f-head);color:var(--ink);margin:0;text-wrap:balance}
+h1{font-size:27pt;font-weight:700;letter-spacing:-.02em;line-height:1.08}
+h2{
+  font-size:15pt;font-weight:600;letter-spacing:-.01em;line-height:1.2;
+  margin:0 0 3mm;padding-bottom:2mm;border-bottom:1.5pt solid var(--accent);
+}
+h3{font-size:11.5pt;font-weight:600;margin:6mm 0 2mm}
+h4{
+  font-family:var(--f-mono);font-size:7.6pt;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);margin:5mm 0 1.5mm;
+}
+p{margin:0 0 3mm}
+ul,ol{margin:0 0 3mm;padding-left:5mm}
+li{margin-bottom:1.2mm}
+li::marker{color:var(--accent)}
+strong{font-weight:600;color:var(--ink)}
+em{font-style:italic}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--tint);
+  padding:0.3mm 1mm;border-radius:1mm;color:var(--ink)}
+a{color:var(--accent)}
+
+.secnum{
+  font-family:var(--f-mono);font-size:8pt;color:var(--accent);letter-spacing:.1em;
+  display:block;margin-bottom:1mm;font-weight:600;
+}
+section{margin-bottom:9mm}
+section.break{break-before:page;page-break-before:always}
+
+/* ---------------------------------------------------------------- cover - */
+.cover{border-bottom:2.5pt solid var(--ink);padding-bottom:7mm;margin-bottom:7mm}
+.cover .rule{
+  font-family:var(--f-mono);font-size:7.6pt;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:4mm;font-weight:600;
+}
+.cover .sub{
+  font-family:var(--f-head);font-size:12.5pt;font-weight:400;color:var(--muted);
+  margin:2.5mm 0 5mm;line-height:1.35;max-width:150mm;
+}
+.facts{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);
+}
+.facts div{padding:3mm 4mm 3mm 0;border-right:1px solid var(--rule-soft)}
+.facts div:last-child{border-right:0}
+.facts .k{font-family:var(--f-mono);font-size:7pt;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:1mm}
+.facts .v{font-family:var(--f-head);font-size:11pt;font-weight:600;color:var(--ink);line-height:1.25}
+
+/* ---------------------------------------------------------------- bits -- */
+.lede{font-size:11.4pt;line-height:1.5;color:var(--ink);margin-bottom:4mm}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;margin:4mm 0 5mm}
+.kpi{border:1px solid var(--rule);border-top:2.5pt solid var(--accent);padding:3mm 3.5mm;
+  background:var(--paper)}
+.kpi.ok{border-top-color:var(--ok)} .kpi.warn{border-top-color:var(--warn)}
+.kpi.crit{border-top-color:var(--crit)}
+.kpi .k{font-family:var(--f-mono);font-size:6.8pt;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:1.5mm;line-height:1.3}
+.kpi .v{font-family:var(--f-head);font-size:17pt;font-weight:700;color:var(--ink);line-height:1;
+  font-variant-numeric:tabular-nums}
+.kpi .n{font-size:8.4pt;color:var(--muted);margin-top:1.5mm;line-height:1.35}
+
+table{width:100%;border-collapse:collapse;margin:2.5mm 0 4mm;font-family:var(--f-head);
+  font-size:8.9pt;break-inside:avoid}
+th{text-align:left;font-family:var(--f-mono);font-size:6.9pt;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--muted);font-weight:600;
+  padding:0 3mm 1.5mm 0;border-bottom:1px solid var(--ink);vertical-align:bottom}
+td{padding:1.8mm 3mm 1.8mm 0;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;
+  white-space:nowrap;padding-right:0}
+tbody tr.hi td{background:var(--accent-tint);font-weight:600}
+tbody tr.dim td{color:var(--muted)}
+td:first-child{font-weight:500;color:var(--ink)}
+.tbl-note{font-size:8.4pt;color:var(--muted);margin:-2mm 0 4mm;font-style:italic}
+
+.box{border:1px solid var(--rule);border-left:3pt solid var(--accent);background:var(--tint);
+  padding:3.5mm 4mm;margin:4mm 0;break-inside:avoid;orphans:3;widows:3}
+.box.warn{border-left-color:var(--warn);background:var(--warn-tint)}
+.box.crit{border-left-color:var(--crit);background:var(--crit-tint)}
+.box.ok{border-left-color:var(--ok);background:var(--ok-tint)}
+.box h4{margin-top:0}
+.box p:last-child{margin-bottom:0}
+
+.pill{display:inline-block;font-family:var(--f-mono);font-size:6.8pt;letter-spacing:.08em;
+  text-transform:uppercase;padding:.6mm 1.8mm;border-radius:1mm;font-weight:600}
+.pill.ok{background:var(--ok-tint);color:var(--ok)}
+.pill.warn{background:var(--warn-tint);color:var(--warn)}
+.pill.crit{background:var(--crit-tint);color:var(--crit)}
+.pill.acc{background:var(--accent-tint);color:var(--accent)}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 7mm}
+.flow{font-family:var(--f-mono);font-size:8pt;line-height:1.7;background:var(--tint);
+  border:1px solid var(--rule);padding:3.5mm 4mm;margin:3mm 0;white-space:pre;
+  overflow-x:auto;color:var(--ink);break-inside:avoid}
+.toc{display:grid;grid-template-columns:1fr 1fr;column-gap:9mm;font-family:var(--f-head);
+  font-size:9pt;margin-top:2mm}
+.toc div{padding:.9mm 0;border-bottom:1px solid var(--rule-soft)}
+.coverpage{break-after:page;page-break-after:always}
+.toc b{font-family:var(--f-mono);font-size:7.6pt;color:var(--accent);margin-right:2.5mm}
+
+footer{border-top:1px solid var(--rule);margin-top:8mm;padding-top:3mm;
+  font-family:var(--f-mono);font-size:7.4pt;color:var(--muted);
+  display:flex;justify-content:space-between;gap:5mm;flex-wrap:wrap}
+
+/* ---------------------------------------------------------------- print - */
+@page{size:A4;margin:16mm 15mm 15mm}
+@media print{
+  body{background:#fff;font-size:9.6pt}
+  .page{max-width:none;margin:0;padding:0;box-shadow:none}
+  h2{break-after:avoid;page-break-after:avoid}
+  h3,h4{break-after:avoid;page-break-after:avoid}
+  .kpis,.facts{break-inside:avoid}
+}
+@media screen and (max-width:760px){
+  .facts,.kpis{grid-template-columns:repeat(2,1fr)}
+  .two,.toc{display:block;columns:1}
+  .page{padding:12mm 6mm}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ================================================================ COVER -->
+<div class="coverpage">
+<div class="cover">
+  <div class="rule">Proof of Concept · SanDisk Hackathon Submission</div>
+  <h1>WaferLens</h1>
+  <p class="sub">Multi-resolution die yield prediction with interpretable spatial context —
+  predicting which currently-passing dies are about to fail, and explaining why by resolution.</p>
+  <div class="facts">
+    <div><div class="k">Prepared by</div><div class="v">Team WaferLens</div></div>
+    <div><div class="k">Date</div><div class="v">9 September 2026</div></div>
+    <div><div class="k">Build window</div><div class="v">24 hours · 4 engineers</div></div>
+    <div><div class="k">Status</div><div class="v">Working end to end</div></div>
+  </div>
+</div>
+
+<h4>Contents</h4>
+<div class="toc">
+  <div><b>01</b>Executive summary</div>
+  <div><b>02</b>Problem and business context</div>
+  <div><b>03</b>Objectives and success criteria</div>
+  <div><b>04</b>Scope</div>
+  <div><b>05</b>Data</div>
+  <div><b>06</b>Reconnaissance: five measurements that set the design</div>
+  <div><b>07</b>Feature engineering</div>
+  <div><b>08</b>Model A</div>
+  <div><b>09</b>Model B</div>
+  <div><b>10</b>Class imbalance</div>
+  <div><b>11</b>Calibration and uncertainty</div>
+  <div><b>12</b>Threshold and economics</div>
+  <div><b>13</b>Results</div>
+  <div><b>14</b>Interpretability</div>
+  <div><b>15</b>System architecture</div>
+  <div><b>16</b>The operator console</div>
+  <div><b>17</b>Validation and integrity</div>
+  <div><b>18</b>Negative results and limitations</div>
+  <div><b>19</b>Risks</div>
+  <div><b>20</b>Path to production</div>
+  <div><b>21</b>Deliverables checklist</div>
+  <div><b>22</b>Reproducing this work</div>
+  <div><b>23</b>Appendix</div>
+</div>
+</div><!-- /coverpage -->
+
+<!-- ================================================================ 01 --- -->
+<section>
+  <span class="secnum">Section 01</span>
+  <h2>Executive summary</h2>
+
+  <p class="lede">WaferLens predicts which semiconductor dies that <em>passed</em> pre-test are about to
+  fail, using three resolutions of evidence at once: the die's own 500 electrical parametrics, its
+  position and neighbourhood on the wafer, and the 2,000 sub-die block readings taken inside it. It
+  reaches <strong>0.5767 AUC-PR</strong> against a best incumbent method of 0.0734 — a
+  <strong>7.9× improvement</strong> — and returns, for every die, a calibrated probability, an
+  uncertainty interval, a three-way attribution of where the risk came from, and a named physical root
+  cause with the fab module to inspect.</p>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k">AUC-PR, Model B</div><div class="v">0.5767</div>
+      <div class="n">Primary selection metric, failure class</div></div>
+    <div class="kpi ok"><div class="k">Lift over incumbent</div><div class="v">7.9×</div>
+      <div class="n">Versus NNR (k=8), the best classical screen</div></div>
+    <div class="kpi"><div class="k">Failures caught</div><div class="v">44.6%</div>
+      <div class="n">616 of 1,380, scrapping 2.79% of the wafer</div></div>
+    <div class="kpi warn"><div class="k">Block-data gain</div><div class="v">+5.3%</div>
+      <div class="n">Model A → B, +0.0291 AUC-PR</div></div>
+  </div>
+
+  <h4>The five things that matter</h4>
+  <ol>
+    <li><strong>The hackathon's core question is answered, with a number.</strong> The 2,000 block
+      readings <em>do</em> help, but modestly: +0.0291 AUC-PR, a 5.3% relative gain. We report the size
+      of the effect rather than claiming a breakthrough.</li>
+    <li><strong>We implemented the incumbent methods first.</strong> DPAT, GDBN and NNR are the screens
+      the industry uses today. Without them, "0.58 AUC-PR" means nothing. With them, it means 7.9×.</li>
+    <li><strong>Every prediction is decomposed by resolution.</strong> Not just which features mattered,
+      but how much of the risk came from the die, from its neighbourhood, and from inside it. That is
+      what turns a probability into an engineering instruction.</li>
+    <li><strong>Probabilities are calibrated and carry intervals.</strong> Brier score improves from
+      0.0640 raw to 0.0249 after isotonic regression; expected calibration error falls to 0.0056. A
+      stated risk of 0.30 really does mean three in ten.</li>
+    <li><strong>Our negative results are in the document.</strong> The multi-scale spatial factory cost
+      us 0.008 AUC-PR. Per-wafer adaptive weighting under-performed global weighting. SMOTE hurt.
+      Venn-ABERS intervals were degenerate. The attention branch under-performed statistical pooling on
+      the shipped run. All of it is measured and reported.</li>
+  </ol>
+
+  <div class="box">
+    <h4>What a judge can do in five minutes</h4>
+    <p>Run <code>python -m webapp.server</code> and open the console. Press <em>1</em> for the overview,
+    then click any die on the wafer map to see its risk decomposed three ways. Press <em>5</em> and drag
+    the decision threshold to watch recall and yield loss trade against each other on the real test set.
+    Press <em>2</em> and start the pipeline: it trains, calibrates and redraws every figure in front of
+    you in under two minutes.</p>
+  </div>
+</section>
+
+<!-- ================================================================ 02 --- -->
+<section>
+  <span class="secnum">Section 02</span>
+  <h2>Problem and business context</h2>
+
+  <p>A wafer is a disc of silicon carrying roughly a thousand near-identical dies in a grid. After
+  fabrication every die is electrically probed and marked pass or fail. Some dies are already known-failed
+  going into this round of testing; those carry <code>old_label == 1</code>. The rest look fine.</p>
+
+  <p><strong>The task is to predict which of the currently-passing dies will fail.</strong> A die that
+  passes probe but fails later becomes a field failure, a return, and in the worst case a recall. A die
+  scrapped unnecessarily is pure yield loss. The screen sits exactly between those two costs.</p>
+
+  <h3>Why the incumbent methods are running out of road</h3>
+  <p>The industry ladder is PAT → DPAT → NNR → GDBN. GDBN — "Good Die in a Bad Neighborhood" — scraps a
+  die that tests fine but sits surrounded by failures. These methods assume univariate Gaussian
+  parameter distributions and threshold one parameter at a time. At advanced nodes that assumption
+  breaks down, and our own data reproduces the published critique: the median Cohen's d across the 500
+  parametrics is <strong>0.134</strong>. There is no single parameter for a univariate rule to
+  threshold on.</p>
+
+  <p>Our <em>m</em> × <em>m</em> neighbourhood window is a learned replacement for that heuristic, and
+  the block branch adds a resolution the incumbent methods do not look at at all.</p>
+
+  <h3>Where the value sits</h3>
+  <table>
+    <thead><tr><th>Failure mode</th><th>Consequence</th><th>Who pays</th></tr></thead>
+    <tbody>
+      <tr><td>Escape (missed failure)</td><td>Field failure, RMA, possible recall</td><td>Customer, then warranty</td></tr>
+      <tr><td>Overkill (false alarm)</td><td>A good die is scrapped</td><td>Yield, directly</td></tr>
+      <tr><td>Undiagnosed excursion</td><td>The fault repeats on the next lot</td><td>Every wafer until it is found</td></tr>
+    </tbody>
+  </table>
+  <p>The third row is the one a probability alone cannot address, and the reason this proof of concept
+  invests as heavily in attribution as in accuracy.</p>
+</section>
+
+<!-- ================================================================ 03 --- -->
+<section>
+  <span class="secnum">Section 03</span>
+  <h2>Objectives and success criteria</h2>
+
+  <table>
+    <thead><tr><th>Objective</th><th>Success criterion</th><th class="n">Result</th></tr></thead>
+    <tbody>
+      <tr><td>Model A</td><td>Die parametrics + spatial context → per-die failure probability</td><td class="n">0.5476 AUC-PR</td></tr>
+      <tr><td>Model B</td><td>Model A inputs + 2,000 block readings → per-die probability</td><td class="n">0.5767 AUC-PR</td></tr>
+      <tr><td>Answer the block question</td><td>Measure whether block data helps, either way</td><td class="n">+5.31%</td></tr>
+      <tr><td>Beat the incumbent</td><td>Exceed DPAT / GDBN / NNR on the same wafers</td><td class="n">7.9×</td></tr>
+      <tr><td>Survive the imbalance</td><td>No trivial all-pass model; select on AUC-PR, never accuracy</td><td class="n">Met</td></tr>
+      <tr><td>Interpretability</td><td>Per-die attribution, spatial heatmaps, block pattern analysis</td><td class="n">Met</td></tr>
+      <tr><td>Calibration</td><td>Stated probability matches observed frequency</td><td class="n">ECE 0.0056</td></tr>
+      <tr><td>Reproducibility</td><td>One command regenerates every number and figure</td><td class="n">Met</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box warn">
+    <h4>The metric decision, made before any modelling</h4>
+    <p>Only 4.23% of eligible dies newly fail. A model that predicts "everything passes" scores
+    <strong>95.77% accuracy</strong> and catches nothing. Accuracy is therefore reported once, because
+    the deliverable asks for it, and is never used to select anything. Selection is on AUC-PR on the
+    failure class, with F1 as the secondary check.</p>
+  </div>
+</section>
+
+<!-- ================================================================ 04 --- -->
+<section>
+  <span class="secnum">Section 04</span>
+  <h2>Scope</h2>
+
+  <div class="two">
+    <div>
+      <h4>In scope</h4>
+      <ul>
+        <li>Both required models and the comparison between them</li>
+        <li>Classical incumbent baselines for context</li>
+        <li>Class imbalance study across six strategies</li>
+        <li>Probability calibration and per-die uncertainty</li>
+        <li>Threshold selection driven by cost</li>
+        <li>Per-die attribution by resolution, plus root-cause mapping</li>
+        <li>An operator console with a live pipeline runner</li>
+        <li>Data provenance and leakage verification</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Out of scope for this proof of concept</h4>
+      <ul>
+        <li>Live connection to fab equipment or an MES</li>
+        <li>Deployment, serving infrastructure, and monitoring</li>
+        <li>Drift detection and scheduled retraining</li>
+        <li>Multi-lot or cross-fab generalisation</li>
+        <li>Hyper-parameter search beyond one 40-trial Optuna study</li>
+        <li>Formal statistical significance testing of the A→B delta</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ 05 --- -->
+<section class="break">
+  <span class="secnum">Section 05</span>
+  <h2>Data</h2>
+
+  <p>The dataset is generated by the organisers' own script from the public
+  <strong>WM-811K</strong> wafer map corpus. We did not modify the generator or its settings; both facts
+  are verified programmatically and shown in the console.</p>
+
+  <table>
+    <thead><tr><th>Property</th><th>Value</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td>Wafers, held-out test</td><td class="n">40</td><td>Never seen during training or tuning</td></tr>
+      <tr><td>Dies on those wafers</td><td class="n">39,351</td><td>Roughly 984 dies per wafer</td></tr>
+      <tr><td>Pre-test failures</td><td class="n">6,753</td><td>Input signal only, never a target</td></tr>
+      <tr><td>Eligible dies scored</td><td class="n">32,598</td><td><code>old_label == 0</code></td></tr>
+      <tr><td>New failures</td><td class="n">1,380</td><td>4.23% of eligible</td></tr>
+      <tr><td>Parametrics per die</td><td class="n">500</td><td>Electrical measurements</td></tr>
+      <tr><td>Block readings per die</td><td class="n">2,000</td><td>Sub-die process variation</td></tr>
+      <tr><td>Block cache on disk</td><td class="n">0.85 GB</td><td>float16, memory-mapped, never fully loaded</td></tr>
+      <tr><td>Missing values</td><td class="n">0</td><td>Across all training columns</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Splitting, and the trap we found</h3>
+  <p>Splits are made <strong>by wafer, never by die</strong>. Dies from one wafer share a process history,
+  so splitting by die leaks that history across the boundary and inflates every score. The pipeline
+  asserts zero wafer overlap on every run.</p>
+
+  <div class="box crit">
+    <h4>Trap found in the supplied kit</h4>
+    <p>The kit's <code>validation.parquet</code> is <code>test.parquet</code> with the label column
+    dropped — the same wafers, an identical row count. It is <strong>not</strong> a third split. Tuning
+    on it would be tuning on the test set. We carve validation out of <em>train</em> by wafer and keep
+    <code>test</code> as a true holdout, using <code>validation.parquet</code> only to produce the
+    submission file.</p>
+  </div>
+</section>
+
+<!-- ================================================================ 06 --- -->
+<section>
+  <span class="secnum">Section 06</span>
+  <h2>Reconnaissance: five measurements that set the design</h2>
+
+  <p>Before writing a single model we spent two hours measuring the data. Each of the five answers
+  changed an architectural decision. This is the section that explains why the system looks the way it
+  does.</p>
+
+  <table>
+    <thead><tr><th style="width:22%">Question</th><th>Measured answer</th><th style="width:32%">What it changed</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Q1 · Failure rate among eligible dies</td>
+        <td><strong>4.18%</strong>, inside the stated 2–5% band. All-pass scores ~95.8% accuracy.</td>
+        <td>Select on AUC-PR. Never report accuracy as a result.</td>
+      </tr>
+      <tr>
+        <td>Q2 · Are block readings ordered?</td>
+        <td><strong>Ordered.</strong> Lag-1 autocorrelation 0.250 against a shuffled control of +0.001,
+          decaying to zero by lag 5 — the footprint of a smoothing kernel.</td>
+        <td>Run-length features become meaningful and attention has a genuine contiguous cluster to
+          point at.</td>
+      </tr>
+      <tr>
+        <td>Q3 · Spatial ↔ parametric correlation</td>
+        <td><strong>Weak.</strong> The 5×5 bad-neighbour ratio correlates +0.012 with the new-failure
+          label pooled, +0.018 centred within wafer. Between wafers the correlation is −0.187, which
+          drags the pooled figure negative.</td>
+        <td>Build neighbourhood features, but expect little. The <em>wafer-level rate</em> carries the
+          spatial information — which the ablation later confirmed.</td>
+      </tr>
+      <tr>
+        <td>Q4 · Are wafers cleanly separated?</td>
+        <td><strong>Only because we enforce it.</strong> All three pairwise overlaps are zero. The kit's
+          validation file mirrors test.</td>
+        <td>By-wafer split with an assertion, and a carved validation set.</td>
+      </tr>
+      <tr>
+        <td>Q5 · Class overlap</td>
+        <td><strong>Severe.</strong> Median Cohen's d 0.133; the best single feature reaches 0.369. But
+          the features are near-independent, so they add in quadrature to an aggregate
+          <strong>d = 3.44</strong>.</td>
+        <td>The single most consequential finding. Do not hope a tree finds one good feature among 500 —
+          build an explicit multivariate anomaly score that pools all of them.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="tbl-note">Q3 also measured the bad-neighbour ratio against parametric anomaly at +0.015 —
+  effectively zero. Neighbourhood badness does not announce itself in a die's own parameters, so the two
+  channels are independent sources of evidence. That is the argument for fusing them rather than
+  expecting one to subsume the other.</p>
+</section>
+
+<!-- ================================================================ 07 --- -->
+<section class="break">
+  <span class="secnum">Section 07</span>
+  <h2>Feature engineering</h2>
+
+  <p>Roughly 2,500 raw inputs per die are reduced to <strong>88 engineered features</strong> across three
+  resolutions. Every transform is fitted on train only and applied unchanged to validation and test.</p>
+
+  <div class="flow">2,500 raw inputs per die
+  ├── 500 parametrics ──► DIE features      ── per-wafer z-scores, robust scaling,
+  │                                             pooled Mahalanobis-style anomaly score
+  ├── grid position   ──► SPATIAL features  ── m×m bad-neighbour ratio, radial position,
+  │                                             directional asymmetry, longest run,
+  │                                             transductive wafer prior, signature class
+  └── 2,000 blocks    ──► BLOCK features    ── 25 summary statistics, hot-block count,
+                                                longest contiguous excursion, autocorrelation
+                                          ──► 88 features ──► model</div>
+
+  <h3>Die features</h3>
+  <p>Parametrics are z-scored <em>within each wafer</em>, so a die is measured against its own lot rather
+  than a global mean. The pooled anomaly score is the direct answer to recon Q5: it combines all 500
+  weak, near-independent signals into one strong feature instead of asking a tree to find a needle. That
+  single feature is worth <strong>+0.0278 AUC-PR</strong> in the ablation.</p>
+
+  <h3>Spatial features</h3>
+  <p>The neighbourhood window generalises GDBN: instead of a hand-set bad-neighbour threshold, the model
+  learns how much neighbourhood evidence to weigh. Alongside it sit radial position, directional
+  asymmetry and the longest run of failures — the shape descriptors that make a signature identifiable.
+  The <strong>transductive wafer prior</strong>, which estimates each wafer's own failure rate, is the
+  largest single spatial win at <strong>+0.0463 AUC-PR</strong>.</p>
+
+  <h3>Block features</h3>
+  <p>Twenty-five summary statistics per die, computed vectorised over the memory-mapped float16 cache.
+  Because recon Q2 proved the readings are ordered, run-length statistics — the longest contiguous stretch
+  above the die's own mean plus two standard deviations — are meaningful rather than arbitrary. Feeding
+  2,000 raw values per die directly to a model was never viable at 32,598 dies.</p>
+
+  <div class="box">
+    <h4>Performance constraint that shaped the code</h4>
+    <p>No per-die Python loop over the wafer survives at this scale. Every spatial feature is computed
+    with <code>scipy.ndimage</code> convolutions or vectorised NumPy over the whole wafer grid at once.</p>
+  </div>
+</section>
+
+<!-- ================================================================ 08 --- -->
+<section>
+  <span class="secnum">Section 08</span>
+  <h2>Model A — die parametrics and spatial context</h2>
+
+  <p>A gradient-boosted decision tree (LightGBM) over the 63 die and spatial features. Trees were chosen
+  over a neural network for three reasons: tabular features with heterogeneous scales, a training budget
+  measured in seconds rather than hours, and native compatibility with tree-SHAP, which the
+  interpretability deliverable depends on.</p>
+
+  <table>
+    <thead><tr><th>Property</th><th>Choice</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td>Estimator</td><td>LightGBM, balanced class weights</td><td>Fast, tabular-native, SHAP-friendly</td></tr>
+      <tr><td>Feature count</td><td>63</td><td>Die + spatial only, no block inputs</td></tr>
+      <tr><td>Threshold</td><td>Tuned on the validation PR curve</td><td>Never left at 0.5</td></tr>
+      <tr><td>Calibration</td><td>Isotonic, fitted on validation</td><td>Fitting on test would be meaningless</td></tr>
+      <tr><td>Result</td><td class="n">0.5476 AUC-PR · 0.5214 F1</td><td>Held-out test wafers</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ================================================================ 09 --- -->
+<section>
+  <span class="secnum">Section 09</span>
+  <h2>Model B — adding the 2,000 block readings</h2>
+
+  <p>Model B was built as two independent branches over the same dies, so that the contribution of the
+  block resolution could be measured rather than assumed.</p>
+
+  <table>
+    <thead><tr><th>Branch</th><th>Architecture</th><th class="n">AUC-PR</th><th class="n">F1</th></tr></thead>
+    <tbody>
+      <tr class="dim"><td>Model A, for reference</td><td>LightGBM over die + spatial</td><td class="n">0.5476</td><td class="n">0.5214</td></tr>
+      <tr class="hi"><td>Branch 1 — statistical pooling</td><td>LightGBM over die + spatial + 25 block aggregates</td><td class="n">0.5767</td><td class="n">0.5382</td></tr>
+      <tr><td>Branch 2 — gated attention-MIL</td><td>PyTorch, 2,000 blocks as a multi-instance bag</td><td class="n">0.2729</td><td class="n">0.4451</td></tr>
+    </tbody>
+  </table>
+  <p class="tbl-note">Shipped model: Branch 1. On this run the attention branch under-performed and was
+  not blended into the shipped predictions. See section 18.</p>
+
+  <h3>The attention branch, and why it is still in the repository</h3>
+  <p>The attention-MIL branch treats the 2,000 readings as a bag of instances and learns a gated
+  attention weight per chunk, <code>tanh(V) ⊙ σ(U)</code>, so the model itself says which stretch of
+  blocks drove its decision. That makes block interpretability <em>architectural</em> rather than a
+  post-hoc SHAP approximation over 2,000 dimensions. On earlier runs it reached 0.5986 AUC-PR and blended
+  productively; on the shipped run it did not. We keep it, report both outcomes, and ship the branch that
+  measured better.</p>
+
+  <div class="box ok">
+    <h4>The answer to the hackathon's core question</h4>
+    <p><strong>Yes, the block readings help — by +0.0291 AUC-PR, a 5.31% relative gain.</strong> That is a
+    real improvement and a modest one. It arrives through statistical pooling of the 2,000 readings, not
+    through the attention architecture. Precision improves most: 0.637 → 0.678, meaning the block signal
+    mainly removes false alarms rather than finding new failures.</p>
+  </div>
+</section>
+
+<!-- ================================================================ 10 --- -->
+<section class="break">
+  <span class="secnum">Section 10</span>
+  <h2>Class imbalance — six rungs, measured after each</h2>
+
+  <p>Deliverable 5 asks how each model behaves under a 2–5% failure rate with overlapping distributions.
+  We ran a ladder of six strategies and measured after every rung rather than reporting only the winner.</p>
+
+  <table>
+    <thead><tr><th>Strategy</th><th class="n">AUC-PR</th><th class="n">F1</th><th class="n">Recall</th><th class="n">Precision</th><th class="n">Cut</th></tr></thead>
+    <tbody>
+      <tr><td>0 · No weighting, threshold 0.5</td><td class="n">0.5849</td><td class="n">0.5347</td><td class="n">0.3710</td><td class="n">0.9570</td><td class="n">0.500</td></tr>
+      <tr><td>1 · Balanced weights, threshold 0.5</td><td class="n">0.5859</td><td class="n">0.4230</td><td class="n">0.6174</td><td class="n">0.3218</td><td class="n">0.500</td></tr>
+      <tr><td>2 · Balanced weights + tuned threshold</td><td class="n">0.5859</td><td class="n">0.5491</td><td class="n">0.4029</td><td class="n">0.8620</td><td class="n">0.826</td></tr>
+      <tr><td>3 · Per-wafer adaptive weights + tuned</td><td class="n">0.5729</td><td class="n">0.5407</td><td class="n">0.3993</td><td class="n">0.8374</td><td class="n">0.760</td></tr>
+      <tr class="hi"><td>4 · Focal loss (γ=2) + tuned threshold</td><td class="n">0.5880</td><td class="n">0.5492</td><td class="n">0.4304</td><td class="n">0.7586</td><td class="n">0.473</td></tr>
+      <tr><td>5 · SMOTE oversampling + tuned threshold</td><td class="n">0.5607</td><td class="n">0.5177</td><td class="n">0.4239</td><td class="n">0.6648</td><td class="n">0.494</td></tr>
+    </tbody>
+  </table>
+
+  <h3>What actually moved the needle</h3>
+  <ol>
+    <li><strong>Threshold tuning is the biggest lever, and it is free.</strong> Rung 1 to rung 2 changes
+      no model at all — only where the probability is cut. F1 moves 0.4230 → 0.5491 at an
+      <em>identical</em> AUC-PR of 0.5859. Ranking quality was never the problem; the default cut point
+      was.</li>
+    <li><strong>Class weighting trades precision for recall; it adds no information.</strong> Rung 0 to
+      rung 1 lifts recall from 0.371 to 0.617 while AUC-PR barely moves. Reaching for
+      <code>class_weight='balanced'</code> and stopping there relabels the same ranking.</li>
+    <li><strong>Focal loss won.</strong> It down-weights easy examples so the gradient budget reaches the
+      ambiguous overlap, which is where 65% of this dataset's failures sit by construction.</li>
+    <li><strong>Per-wafer adaptive weighting did not pay off</strong> (0.5729 against 0.5859). We expected
+      it to win. The likely reason is that the transductive wafer-prior features already give the model
+      each wafer's rate, so re-encoding it in the sample weights is redundant.</li>
+    <li><strong>SMOTE was run last and hurt</strong> (0.5607). Synthetic minority points are interpolated
+      between existing failures, and at a median Cohen's d of 0.134 those interpolations land inside the
+      pass distribution. Manufacturing more points inside the overlap cannot resolve the overlap.</li>
+  </ol>
+</section>
+
+<!-- ================================================================ 11 --- -->
+<section>
+  <span class="secnum">Section 11</span>
+  <h2>Calibration and uncertainty</h2>
+
+  <p>A probability an operator cannot price is not useful. Isotonic regression is fitted on the validation
+  wafers only and applied unchanged to test.</p>
+
+  <table>
+    <thead><tr><th>Measure</th><th class="n">Raw</th><th class="n">Calibrated</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Brier score</td><td class="n">0.0640</td><td class="n">0.0249</td><td>Mean squared error of the probability. Lower is better.</td></tr>
+      <tr><td>Expected calibration error</td><td class="n">0.1367</td><td class="n">0.0056</td><td>Average gap between stated risk and observed rate.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Per-die intervals</h3>
+  <p>We implemented Venn-ABERS first, because it is the textbook distribution-free answer, then measured
+  it and found it degenerate at this sample size.</p>
+
+  <table>
+    <thead><tr><th>Method</th><th class="n">Mean width</th><th class="n">Band coverage</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr class="dim"><td>Venn-ABERS (IVAP)</td><td class="n">0.0017</td><td class="n">11%</td><td>Degenerate — width shrinks as O(1/n)</td></tr>
+      <tr class="hi"><td>Bootstrap over the calibration set</td><td class="n">0.0121</td><td class="n">67%</td><td>Shipped</td></tr>
+    </tbody>
+  </table>
+  <p class="tbl-note">With a 29,532-die calibration set, the two isotonic fits behind IVAP differ by one
+  point in 29,532, so the interval collapses. It answers "how much could one more observation move this
+  estimate", which is not the question an engineer is asking. Resampling the calibration set answers the
+  right question and brackets the observed failure rate in 67% of risk bands. We report both and ship the
+  bootstrap interval.</p>
+</section>
+
+<!-- ================================================================ 12 --- -->
+<section>
+  <span class="secnum">Section 12</span>
+  <h2>Threshold and economics</h2>
+
+  <p>The decision threshold is not a modelling choice; it is a business one. The pipeline sweeps every
+  candidate cut over the held-out test set and prices each one, given a cost ratio between shipping a bad
+  die and scrapping a good one.</p>
+
+  <table>
+    <thead><tr><th>Operating point</th><th class="n">Cut</th><th class="n">Recall</th><th class="n">Yield loss</th><th class="n">Escape rate</th></tr></thead>
+    <tbody>
+      <tr class="hi"><td>Shipped, balanced</td><td class="n">0.2833</td><td class="n">44.6%</td><td class="n">2.79%</td><td class="n">55.4%</td></tr>
+      <tr><td>Cost-optimal at ratio 100</td><td class="n">0.0344</td><td class="n">80.7%</td><td class="n">22.8%</td><td class="n">19.3%</td></tr>
+      <tr><td>Cost-optimal at ratio 20</td><td class="n">0.0555</td><td class="n">71.8%</td><td class="n">13.6%</td><td class="n">28.2%</td></tr>
+      <tr class="dim"><td>GDBN incumbent, its own optimum</td><td class="n">—</td><td class="n">7.0%</td><td class="n">—</td><td class="n">93.0%</td></tr>
+    </tbody>
+  </table>
+
+  <p>At a cost ratio of 100 — one escape costs as much as a hundred scrapped dies — the optimal cut
+  reduces expected failure cost by <strong>76.1%</strong> against shipping every die, worth roughly
+  <strong>$7,900 per wafer</strong> at $2.50 per die.</p>
+
+  <div class="box warn">
+    <h4>Read the annualised figure carefully</h4>
+    <p>Extrapolated to 20,000 wafers a month the modelled saving is large, but it is the product of four
+    operator-supplied assumptions: cost ratio, die cost, volume, and the acceptable scrap ceiling. The
+    console exposes all four as sliders precisely so nobody has to take a single headline number on
+    trust. The defensible claim is the percentage, not the currency.</p>
+  </div>
+</section>
+
+<!-- ================================================================ 13 --- -->
+<section class="break">
+  <span class="secnum">Section 13</span>
+  <h2>Results</h2>
+
+  <h3>Deliverable 3 — the comparison table</h3>
+  <p>All figures on held-out test wafers, eligible dies only. 32,598 dies, 1,380 new failures (4.23%).</p>
+
+  <table>
+    <thead><tr><th>Model</th><th class="n">AUC-PR</th><th class="n">F1</th><th class="n">Recall</th><th class="n">Precision</th><th class="n">Accuracy</th></tr></thead>
+    <tbody>
+      <tr class="dim"><td>All-pass (the trap)</td><td class="n">0.0423</td><td class="n">0.000</td><td class="n">0.000</td><td class="n">0.000</td><td class="n">0.9577</td></tr>
+      <tr><td>DPAT (3σ)</td><td class="n">0.0454</td><td class="n">0.056</td><td class="n">0.064</td><td class="n">0.050</td><td class="n">0.9089</td></tr>
+      <tr><td>GDBN (5×5)</td><td class="n">0.0536</td><td class="n">0.069</td><td class="n">0.070</td><td class="n">0.068</td><td class="n">0.9202</td></tr>
+      <tr><td>NNR (k=8)</td><td class="n">0.0734</td><td class="n">0.118</td><td class="n">0.118</td><td class="n">0.118</td><td class="n">0.9253</td></tr>
+      <tr><td>Model A — die + spatial</td><td class="n">0.5476</td><td class="n">0.521</td><td class="n">0.441</td><td class="n">0.637</td><td class="n">0.9657</td></tr>
+      <tr class="hi"><td>Model B — + 2,000 blocks</td><td class="n">0.5767</td><td class="n">0.538</td><td class="n">0.446</td><td class="n">0.678</td><td class="n">0.9676</td></tr>
+    </tbody>
+  </table>
+  <p class="tbl-note">Read AUC-PR, not accuracy. The all-pass row scores 95.77% accuracy while catching
+  exactly zero failures.</p>
+
+  <h3>Model A → Model B</h3>
+  <table>
+    <thead><tr><th>Metric</th><th class="n">Model A</th><th class="n">Model B</th><th class="n">Delta</th></tr></thead>
+    <tbody>
+      <tr><td>AUC-PR</td><td class="n">0.5476</td><td class="n">0.5767</td><td class="n">+0.0291 (+5.31%)</td></tr>
+      <tr><td>F1, failure class</td><td class="n">0.5214</td><td class="n">0.5382</td><td class="n">+0.0168</td></tr>
+      <tr><td>Recall</td><td class="n">0.4413</td><td class="n">0.4464</td><td class="n">+0.0051</td></tr>
+      <tr><td>Precision</td><td class="n">0.6370</td><td class="n">0.6777</td><td class="n">+0.0407</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Ablation — what each component is actually worth</h3>
+  <p>Each row rebuilds the model with exactly one more component switched on and rescores the same
+  held-out wafers. Nothing here is estimated from feature importance.</p>
+
+  <table>
+    <thead><tr><th>Stage</th><th class="n">AUC-PR</th><th class="n">Gain</th></tr></thead>
+    <tbody>
+      <tr><td>Raw 500 parametrics + spatial v1</td><td class="n">0.4814</td><td class="n">baseline</td></tr>
+      <tr><td>+ transductive wafer prior</td><td class="n">0.5277</td><td class="n">+0.0463</td></tr>
+      <tr><td>+ spatial factory v2</td><td class="n">0.5198</td><td class="n">−0.0079</td></tr>
+      <tr><td>+ pooled anomaly score · <span class="pill acc">Model A final</span></td><td class="n">0.5476</td><td class="n">+0.0278</td></tr>
+      <tr><td>+ block pooling v1 (mean / std / max)</td><td class="n">0.5830</td><td class="n">+0.0354</td></tr>
+      <tr class="hi"><td>+ block pooling v2 (25 stats) · <span class="pill acc">Model B final</span></td><td class="n">0.5859</td><td class="n">+0.0029</td></tr>
+    </tbody>
+  </table>
+  <p class="tbl-note">The ablation is its own rebuild series and lands marginally above the shipped
+  Model B (0.5859 against 0.5767) because it uses a fixed configuration rather than the shipped
+  calibration path. Both are reported rather than reconciled after the fact.</p>
+
+  <h3>Confusion matrix at the shipped operating point</h3>
+  <div class="kpis">
+    <div class="kpi ok"><div class="k">Caught · true positive</div><div class="v">616</div>
+      <div class="n">Flagged, and really failed</div></div>
+    <div class="kpi warn"><div class="k">False alarm · false positive</div><div class="v">293</div>
+      <div class="n">A good die scrapped</div></div>
+    <div class="kpi crit"><div class="k">Escape · false negative</div><div class="v">764</div>
+      <div class="n">A failure shipped</div></div>
+    <div class="kpi"><div class="k">Correct pass · true negative</div><div class="v">30,925</div>
+      <div class="n">Left alone, correctly</div></div>
+  </div>
+  <p>Read as a screen: we flag 909 of 32,598 dies — 2.79% of the wafer — and 67.8% of those flags are
+  correct. The escape rate of 55.4% is high in absolute terms and is the honest headline number; the
+  economics section shows exactly what it costs to buy it down.</p>
+</section>
+
+<!-- ================================================================ 14 --- -->
+<section>
+  <span class="secnum">Section 14</span>
+  <h2>Interpretability</h2>
+
+  <p>Deliverable 4 asks for per-die feature importance, a spatial contribution visualisation, and block
+  pattern analysis. We treat interpretability as the product rather than a reporting obligation.</p>
+
+  <div class="flow">Die (14, 22) — failure risk 0.83   [interval 0.71–0.91]
+├── 0.31  DIE      IDDQ sits 3.2σ above its spatially-expected value
+├── 0.28  SPATIAL  neighbourhood matches an Edge-Ring signature (5×5 BNR = 0.68)
+└── 0.24  BLOCK    attention concentrated on blocks 1420–1610
+     ↳ ROOT CAUSE   RTP / anneal temperature regulation
+     ↳ ACTION       screen die; flag lot for thermal-module review</div>
+
+  <h3>Three layers of explanation</h3>
+  <ol>
+    <li><strong>Attribution by resolution.</strong> Signed tree-SHAP values are grouped into die, spatial
+      and block families and normalised to sum to one. This answers a question raw feature importance
+      cannot: <em>which level of the hierarchy</em> is responsible.</li>
+    <li><strong>Signed per-feature contributions.</strong> The top five features for the die, with
+      direction, so an engineer can see what pushed the risk up and what pulled it down.</li>
+    <li><strong>Block pattern analysis.</strong> The 2,000-reading waveform with the longest contiguous
+      excursion above the die's own mean plus two standard deviations marked, plus the attention weights
+      from the MIL branch where available.</li>
+  </ol>
+
+  <h3>Signature to physical root cause</h3>
+  <p>The spatial signature classifier is a deliberately transparent rule set over the spatial features,
+  not a model. Every branch can be audited, and it needs no training data. Each signature maps to a
+  documented physical cause and a specific engineering action.</p>
+
+  <table>
+    <thead><tr><th>Signature</th><th>Physical cause</th><th>Action</th><th class="n">Dies</th></tr></thead>
+    <tbody>
+      <tr><td>Clean</td><td>No wafer-scale signature; die-local cause</td><td>Screen die only</td><td class="n">13,516</td></tr>
+      <tr><td>Random</td><td>Systemic or gross process excursion</td><td>Escalate lot</td><td class="n">8,133</td></tr>
+      <tr><td>Donut</td><td>Residue resistant to photoresist cleaning</td><td>Clean / strip step review</td><td class="n">5,661</td></tr>
+      <tr><td>Center</td><td>Irregular RF operation or unusual liquid flow</td><td>Chamber RF + flow check</td><td class="n">3,977</td></tr>
+      <tr><td>Near-full</td><td>Systemic or gross excursion</td><td>Escalate lot; halt if repeated</td><td class="n">659</td></tr>
+      <tr><td>Loc</td><td>Localised process excursion</td><td>Inspect tool for the affected zone</td><td class="n">387</td></tr>
+      <tr><td>Scratch</td><td>Mechanical handling damage</td><td>Handler / robot inspection</td><td class="n">262</td></tr>
+      <tr><td>Edge-Loc</td><td>Irregular anneal temperature, load-lock impurities</td><td>Load-lock inspection</td><td class="n">—</td></tr>
+      <tr><td>Edge-Ring</td><td>Anomalous temperature regulation during RTP</td><td>Thermal module review</td><td class="n">—</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Figures produced</h3>
+  <p>Every run regenerates ten figures: attribution decomposition, block attention, calibration curve,
+  class overlap, family importance, PR curves, SHAP waterfall, spatial SHAP heatmap, wafer heatmap and
+  the yield–escape trade-off.</p>
+</section>
+
+<!-- ================================================================ 15 --- -->
+<section>
+  <span class="secnum">Section 15</span>
+  <h2>System architecture</h2>
+
+  <div class="flow">┌──────────── OFFLINE PIPELINE ────────────────────────────────────────┐
+│  ingest ─► by-wafer split ─► feature factory ─► Model A ─► Model B   │
+│      │            │                                  │         │     │
+│      │            └─ leakage assertions              └─ ablation      │
+│      └─ recon (5 proofs)                                             │
+│                          ─► imbalance ladder ─► calibration          │
+│                          ─► economics ─► explainer ─► figures        │
+└───────────────────────────────┬──────────────────────────────────────┘
+                                ▼   artifacts
+     results/preds_full.pkl · results.csv · comparison.md
+     imbalance_analysis.md · recon.md · submission.csv · figures/
+                                ▼
+┌──────────── SERVING ─────────────────────────────────────────────────┐
+│  webapp/server.py   stdlib HTTP, 18 JSON endpoints                   │
+│  webapp/data.py     loads artifacts once, serves from memory         │
+│  webapp/jobs.py     launches pipeline presets, streams stdout        │
+│  webapp/static/     the operator console                             │
+└──────────────────────────────────────────────────────────────────────┘</div>
+
+  <h3>The frozen contract</h3>
+  <p>Agreed in hour one and never changed. Every model returns a list of <code>DiePrediction</code>
+  objects; the explainer, the metrics module and the console consume nothing else. This is what let four
+  people work in parallel without integration stalls.</p>
+
+  <table>
+    <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>wafer_id, die_x, die_y</td><td>Where the die sits</td></tr>
+      <tr><td>y_true, old_label</td><td>Outcome, and whether the die was eligible at all</td></tr>
+      <tr><td>p_fail, y_pred</td><td>Calibrated probability and the decision after the tuned threshold</td></tr>
+      <tr><td>attribution</td><td>Die / spatial / block shares, summing to 1.0</td></tr>
+      <tr><td>top_features</td><td>Five signed SHAP contributions</td></tr>
+      <tr><td>block_attention</td><td>Per-chunk attention weights, Model B only</td></tr>
+      <tr><td>conformal_lo, conformal_hi</td><td>Uncertainty interval</td></tr>
+      <tr><td>root_cause</td><td>Signature, physical cause and action</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Engineering discipline</h3>
+  <ul>
+    <li>Every run appends a row to <code>results/results.csv</code>. An experiment that was not logged
+      did not happen.</li>
+    <li>Seeds are set for NumPy, Python, PyTorch and every model's <code>random_state</code>.</li>
+    <li>Nothing is fitted on validation or test — not scalers, thresholds, imputers or class weights.</li>
+    <li>The supplied generator script is read and wrapped, never modified.</li>
+  </ul>
+</section>
+
+<!-- ================================================================ 16 --- -->
+<section class="break">
+  <span class="secnum">Section 16</span>
+  <h2>The operator console</h2>
+
+  <p>A single-page console over seventeen decks, served by the same standard-library server. It has no
+  build step and no new dependency. Every panel traces to an artifact the pipeline wrote; any endpoint
+  whose artifact is missing returns an error rather than a plausible-looking number.</p>
+
+  <table>
+    <thead><tr><th>Deck</th><th>What it is for</th></tr></thead>
+    <tbody>
+      <tr><td>Command Deck</td><td>Whole-population overview, live integrity checks, model scoreboard</td></tr>
+      <tr><td>Live Pipeline Run</td><td>Starts the real pipeline and streams its output; reloads on completion</td></tr>
+      <tr><td>Live Wafer Matrix</td><td>One wafer as input, prediction and truth; click a die for its full diagnosis</td></tr>
+      <tr><td>Wafer Fleet Wall</td><td>All 40 test wafers at once, downsampled by maximum risk, not mean</td></tr>
+      <tr><td>Threshold Studio</td><td>Move the cut and watch every consequence move with it</td></tr>
+      <tr><td>Risk Observatory</td><td>Distribution, ROC, cumulative capture, class separation, deciles</td></tr>
+      <tr><td>Calibration Lab</td><td>Reliability diagram, per-bin gap, interval width</td></tr>
+      <tr><td>Die Micro-Inspector</td><td>One die's attribution and signed SHAP contributions</td></tr>
+      <tr><td>Spatial Anomaly Maps</td><td>Signature distribution and the module each one implicates</td></tr>
+      <tr><td>Signature Atlas</td><td>Nine failure signatures, cause and action for each</td></tr>
+      <tr><td>2000-Block Telemetry</td><td>The waveform, the attention weights, the block verdict</td></tr>
+      <tr><td>Waveform Bank</td><td>Four dies by outcome: caught, false alarm, escape, clean reference</td></tr>
+      <tr><td>AUC-PR Benchmarks</td><td>The full scoreboard, ladder, ablation and calibration evidence</td></tr>
+      <tr><td>Neural Core</td><td>The ablation chain drawn as a signal path</td></tr>
+      <tr><td>Robotics Interlock</td><td>What a fab would do with the output; dispatch and quarantine list</td></tr>
+      <tr><td>A–Z Pipeline</td><td>The five build stages, written out</td></tr>
+      <tr><td>Data Provenance</td><td>Eight integrity checks, re-run live on every page load</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box">
+    <h4>Scope honesty in the console</h4>
+    <p>The cleanroom strip, the fab map, the robot arm and the SECS/GEM transaction stream are
+    scene-setting for what an integration would look like. They are not connected to equipment, and three
+    buttons — Override &amp; quarantine, Metrology ticket, and Sync with SAP / MES — display a
+    confirmation message and change nothing. Everything else on every deck is computed from the data.</p>
+  </div>
+</section>
+
+<!-- ================================================================ 17 --- -->
+<section>
+  <span class="secnum">Section 17</span>
+  <h2>Validation and integrity</h2>
+
+  <p>Eight checks run live every time the provenance deck is opened. They are not a note written earlier:
+  opening the page re-hashes the source files, re-derives the splits and re-checks all 32,598 predictions
+  against the contract.</p>
+
+  <table>
+    <thead><tr><th>Check</th><th>What it proves</th><th class="n">Status</th></tr></thead>
+    <tbody>
+      <tr><td>WM-811K source present</td><td>The real public dataset, unmodified</td><td class="n"><span class="pill ok">Pass</span></td></tr>
+      <tr><td>Generator unmodified</td><td>We did not edit the supplied script</td><td class="n"><span class="pill ok">Pass</span></td></tr>
+      <tr><td>Generation settings are theirs</td><td>Organisers' configuration, not a friendlier one</td><td class="n"><span class="pill ok">Pass</span></td></tr>
+      <tr><td>Zero wafer leakage</td><td>No wafer appears in more than one split</td><td class="n"><span class="pill ok">Pass</span></td></tr>
+      <tr><td>Pre-test failures excluded</td><td>Already-failed dies were never targets</td><td class="n"><span class="pill ok">Pass</span></td></tr>
+      <tr><td>Kit validation trap handled</td><td>The mirrored validation file was caught</td><td class="n"><span class="pill ok">Pass</span></td></tr>
+      <tr><td>Threshold never left at 0.5</td><td>The cut was tuned on validation</td><td class="n"><span class="pill ok">Pass</span></td></tr>
+      <tr><td>Output contract holds</td><td>Every prediction carries every required field</td><td class="n"><span class="pill ok">Pass</span></td></tr>
+    </tbody>
+  </table>
+
+  <p>Of these, zero wafer leakage is the one that would invalidate everything else if it failed, which is
+  why it is asserted in code on every run rather than checked once by hand.</p>
+</section>
+
+<!-- ================================================================ 18 --- -->
+<section>
+  <span class="secnum">Section 18</span>
+  <h2>Negative results and limitations</h2>
+
+  <p>A proof of concept that reports only its wins is not evidence. These are measured, reproducible, and
+  in the repository.</p>
+
+  <table>
+    <thead><tr><th>What we expected</th><th>What we measured</th><th>What we did</th></tr></thead>
+    <tbody>
+      <tr><td>A richer multi-scale spatial factory would help</td><td>−0.0079 AUC-PR</td><td>Reported it; kept the features for interpretability, not for score</td></tr>
+      <tr><td>Neighbourhood context would carry the spatial signal</td><td>+0.005; the wafer rate carried it at +0.0463</td><td>Rebuilt around the transductive wafer prior</td></tr>
+      <tr><td>Per-wafer adaptive weights would beat global</td><td>0.5729 against 0.5859</td><td>Reported the rung rather than dropping it</td></tr>
+      <tr><td>SMOTE would help a rare class</td><td>0.5607, the worst rung</td><td>Ran it last, as predicted, and reported the harm</td></tr>
+      <tr><td>Venn-ABERS would give honest intervals</td><td>0.0017 wide, 11% coverage</td><td>Shipped bootstrap intervals instead, reported both</td></tr>
+      <tr><td>Attention-MIL would beat statistical pooling</td><td>0.2729 against 0.5767 on the shipped run</td><td>Shipped the pooling branch; kept the code and the earlier result</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Known limitations</h3>
+  <ul>
+    <li><strong>Escape rate is 55.4% at the shipped cut.</strong> More than half of real failures are still
+      missed. The economics sweep shows this is a chosen operating point, not a ceiling — recall reaches
+      80.7% at a 22.8% yield cost — but the shipped point is conservative.</li>
+    <li><strong>The A→B delta is not significance-tested.</strong> +0.0291 AUC-PR on one held-out split is
+      a point estimate. Repeated splits or a bootstrap over wafers would be the next step.</li>
+    <li><strong>Single dataset, single generator configuration.</strong> Nothing here demonstrates
+      generalisation to a different fab, node or product.</li>
+    <li><strong>Attention-MIL results are unstable across runs</strong>, ranging from 0.27 to 0.60 AUC-PR.
+      That variance is itself a finding and needs seed-averaging before the branch could be trusted.</li>
+    <li><strong>Root-cause mapping is a rule set, not a validated diagnosis.</strong> It encodes published
+      signature-to-module associations; it has not been confirmed against real fab failure analysis.</li>
+  </ul>
+</section>
+
+<!-- ================================================================ 19 --- -->
+<section class="break">
+  <span class="secnum">Section 19</span>
+  <h2>Risks</h2>
+
+  <table>
+    <thead><tr><th>Risk</th><th>Impact</th><th>Mitigation in place</th></tr></thead>
+    <tbody>
+      <tr><td>Wafer-level leakage between splits</td><td>Would invalidate every number</td><td>Asserted in code on every run; verified live in the console</td></tr>
+      <tr><td>Selecting on accuracy</td><td>A trivial all-pass model looks excellent</td><td>Selection is on AUC-PR; accuracy is reported once and never used</td></tr>
+      <tr><td>Threshold left at the default</td><td>Costs roughly 0.13 F1 for free</td><td>Tuned on the validation PR curve, stored, applied at test</td></tr>
+      <tr><td>Fitting on validation or test</td><td>Scores become meaningless</td><td>All transforms fitted on train; calibration on validation only</td></tr>
+      <tr><td>Overstating the block-data result</td><td>Loss of credibility under questioning</td><td>The +5.31% figure is stated with its size, not framed as a breakthrough</td></tr>
+      <tr><td>Console theatre mistaken for integration</td><td>Judges feel misled</td><td>Scene-setting elements are labelled in section 16 and in the console guide</td></tr>
+      <tr><td>Run-to-run instability</td><td>Numbers move between demos</td><td>Seeds fixed everywhere; every run logged with a timestamp</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ================================================================ 20 --- -->
+<section>
+  <span class="secnum">Section 20</span>
+  <h2>Path to production</h2>
+
+  <table>
+    <thead><tr><th>Horizon</th><th>Work</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Immediate</td><td>Bootstrap the A→B delta over wafers</td><td>Turn a point estimate into a confidence interval</td></tr>
+      <tr><td>Immediate</td><td>Seed-average the attention branch</td><td>The 0.27–0.60 spread must be explained before it can ship</td></tr>
+      <tr><td>Short term</td><td>Validate signature→module mapping against real failure analysis</td><td>The root-cause claim is currently literature-based</td></tr>
+      <tr><td>Short term</td><td>Per-lot threshold selection</td><td>One global cut is wrong for nearly every individual wafer</td></tr>
+      <tr><td>Medium term</td><td>Drift monitoring and scheduled retraining</td><td>Process shifts will move the parametric distributions</td></tr>
+      <tr><td>Medium term</td><td>Real MES integration behind the dispatch interface</td><td>The interface exists; the connection does not</td></tr>
+      <tr><td>Longer term</td><td>Cross-fab and cross-node generalisation study</td><td>Nothing here demonstrates transfer</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ================================================================ 21 --- -->
+<section>
+  <span class="secnum">Section 21</span>
+  <h2>Deliverables checklist</h2>
+
+  <table>
+    <thead><tr><th class="n">#</th><th>Required deliverable</th><th>Where it lives</th><th class="n">Status</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>Model A — die features + spatial context → failure probabilities</td><td><code>src/model_a.py</code></td><td class="n"><span class="pill ok">Done</span></td></tr>
+      <tr><td class="n">2</td><td>Model B — + block readings → failure probabilities</td><td><code>src/model_b.py</code>, <code>src/block_encoder.py</code></td><td class="n"><span class="pill ok">Done</span></td></tr>
+      <tr><td class="n">3</td><td>Comparison analysis — F1, AUC-PR, accuracy side by side</td><td><code>results/comparison.md</code>, section 13</td><td class="n"><span class="pill ok">Done</span></td></tr>
+      <tr><td class="n">4</td><td>Interpretability — per-die importance, spatial viz, block patterns</td><td><code>src/explain.py</code>, <code>figures/</code>, section 14</td><td class="n"><span class="pill ok">Done</span></td></tr>
+      <tr><td class="n">5</td><td>Imbalance and overlap analysis</td><td><code>results/imbalance_analysis.md</code>, section 10</td><td class="n"><span class="pill ok">Done</span></td></tr>
+    </tbody>
+  </table>
+
+  <h4>Beyond the requirement</h4>
+  <table>
+    <thead><tr><th>Extra</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>DPAT / GDBN / NNR incumbent baselines</td><td>Makes the headline score meaningful</td></tr>
+      <tr><td>Component ablation waterfall</td><td>Shows what each piece is worth, not just the total</td></tr>
+      <tr><td>Isotonic calibration and per-die intervals</td><td>Probabilities an operator can price</td></tr>
+      <tr><td>Cost-driven threshold sweep</td><td>Turns a metric into a business decision</td></tr>
+      <tr><td>Signature → physical root cause mapping</td><td>Turns interpretable into actionable</td></tr>
+      <tr><td>Seventeen-deck operator console with live pipeline runner</td><td>Every claim is inspectable in front of the judge</td></tr>
+      <tr><td>Eight live data-integrity checks</td><td>Verifiable rather than asserted</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ================================================================ 22 --- -->
+<section class="break">
+  <span class="secnum">Section 22</span>
+  <h2>Reproducing this work</h2>
+
+  <div class="flow">python -m src.recon    --dataset full      # the five proofs
+python -m src.report   --dataset full      # full pipeline, all artifacts
+python -m src.ablation --dataset full      # component waterfall
+python -m src.imbalance --dataset full     # the six-rung ladder
+python -m webapp.server                    # console at 127.0.0.1:8000</div>
+
+  <p>Every command appends its results to <code>results/results.csv</code> with a timestamp, so any figure
+  in this document can be traced to the run that produced it.</p>
+
+  <div class="box">
+    <h4>Run provenance for this document</h4>
+    <p>All figures come from the full-dataset run backing <code>results/preds_full.pkl</code> — 40 held-out
+    wafers, 39,351 dies, 32,598 eligible, 1,380 new failures, shipped model <em>Model B (statistical
+    pooling)</em> at a calibrated threshold of 0.2833. This is the same artifact that produces
+    <code>submission.csv</code> and drives every number in the live console, so the document, the
+    submission file and the demo cannot disagree.</p>
+  </div>
+
+  <h3>Dependencies</h3>
+  <p>The supplied kit requires NumPy, pandas, SciPy, PyYAML, PyArrow, scikit-learn and Matplotlib. We
+  added LightGBM, scikit-image, SHAP, Optuna, imbalanced-learn and PyTorch for the attention branch.
+  <strong>The console adds nothing</strong> — it is standard-library Python and hand-written CSS and
+  JavaScript, deliberately, so that the demo can never fail on a dependency.</p>
+</section>
+
+<!-- ================================================================ 23 --- -->
+<section>
+  <span class="secnum">Section 23</span>
+  <h2>Appendix — repository layout</h2>
+
+  <table>
+    <thead><tr><th>Module</th><th class="n">Lines</th><th>Responsibility</th></tr></thead>
+    <tbody>
+      <tr><td>src/contract.py</td><td class="n">59</td><td>The frozen output contract every component obeys</td></tr>
+      <tr><td>src/io_data.py</td><td class="n">172</td><td>Loading, by-wafer split, eligibility filter, leakage assertions</td></tr>
+      <tr><td>src/recon.py</td><td class="n">406</td><td>The five pre-modelling measurements</td></tr>
+      <tr><td>src/features_die.py</td><td class="n">170</td><td>Parametric transforms and the pooled anomaly score</td></tr>
+      <tr><td>src/features_spatial.py</td><td class="n">246</td><td>Neighbourhood, radial, run-length, wafer prior, signature</td></tr>
+      <tr><td>src/features_block.py</td><td class="n">158</td><td>25 statistics over the 2,000 readings</td></tr>
+      <tr><td>src/baselines.py</td><td class="n">104</td><td>All-pass, DPAT, NNR, GDBN</td></tr>
+      <tr><td>src/model_a.py</td><td class="n">320</td><td>Model A and the shared training path</td></tr>
+      <tr><td>src/block_encoder.py</td><td class="n">217</td><td>Gated attention-MIL over the block sequence</td></tr>
+      <tr><td>src/model_b.py</td><td class="n">166</td><td>Model B, both branches and the blend</td></tr>
+      <tr><td>src/imbalance.py</td><td class="n">395</td><td>The six-rung ladder</td></tr>
+      <tr><td>src/calibrate.py</td><td class="n">150</td><td>Isotonic calibration and interval construction</td></tr>
+      <tr><td>src/economics.py</td><td class="n">111</td><td>Cost-driven threshold sweep</td></tr>
+      <tr><td>src/explain.py</td><td class="n">372</td><td>SHAP, attribution decomposition, root-cause table</td></tr>
+      <tr><td>src/figures.py</td><td class="n">361</td><td>All ten figures</td></tr>
+      <tr><td>src/ablation.py</td><td class="n">103</td><td>Component waterfall</td></tr>
+      <tr><td>src/rescue_analysis.py</td><td class="n">140</td><td>Which dies Model B rescues from Model A</td></tr>
+      <tr><td>src/report.py</td><td class="n">377</td><td>Orchestrates the full run and writes every artifact</td></tr>
+      <tr><td>src/metrics.py</td><td class="n">142</td><td>Shared metrics and the results log</td></tr>
+      <tr><td>webapp/</td><td class="n">~2,200</td><td>Server, data layer, job runner, console</td></tr>
+    </tbody>
+  </table>
+  <p class="tbl-note">Roughly 4,600 lines of pipeline code and 2,200 lines of console, written in
+  24 hours by four engineers working against a contract agreed in hour one.</p>
+</section>
+
+<footer>
+  <span>WaferLens — Proof of Concept</span>
+  <span>Figures from the held-out test split · 40 wafers · 32,598 eligible dies</span>
+  <span>9 September 2026</span>
+</footer>
+
+</div>
+</body>
+</html>

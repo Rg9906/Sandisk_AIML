@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WaferLens — Hackathon Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ink:#0F1720; --body:#2B3743; --muted:#63727F; --faint:#8C99A5;
+  --rule:#DCE3EA; --soft:#EEF2F6; --soft2:#F7F9FB;
+  --acc:#0E6F7C; --acc-t:#E2F1F3;
+  --ok:#167A4C; --ok-t:#E4F3EB;
+  --warn:#B07500; --warn-t:#FBF0DC;
+  --bad:#B02135; --bad-t:#FBE8EB;
+  --vio:#6B4EA8; --vio-t:#EFEAF8;
+  --f:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --m:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{background:#5A6672;font-family:var(--f);color:var(--body)}
+
+.slide{
+  width:1600px;height:900px;background:#fff;position:relative;overflow:hidden;
+  margin:0 auto 26px;padding:34px 44px 44px;display:flex;flex-direction:column;
+}
+.slide::after{content:"";position:absolute;left:0;right:0;top:0;height:5px;
+  background:linear-gradient(90deg,var(--acc) 0%,var(--acc) 26%,var(--vio) 26%,var(--vio) 44%,
+  var(--ok) 44%,var(--ok) 62%,var(--warn) 62%,var(--warn) 80%,var(--bad) 80%)}
+
+/* ---------------------------------------------------------------- header */
+.head{display:flex;align-items:flex-start;gap:20px;padding-bottom:12px;
+  border-bottom:2px solid var(--ink);margin-bottom:16px;flex:none}
+.sn{font-family:var(--m);font-size:14px;font-weight:600;color:#fff;background:var(--acc);
+  padding:5px 11px;border-radius:3px;flex:none;letter-spacing:.06em;margin-top:3px}
+.head h2{font-size:33px;font-weight:700;letter-spacing:-.022em;color:var(--ink);line-height:1.05}
+.head .sub{font-size:14.5px;color:var(--muted);margin-top:4px;line-height:1.35}
+.head .thesis{margin-left:auto;text-align:right;max-width:430px;flex:none;
+  border-left:3px solid var(--acc);padding-left:14px}
+.head .thesis .k{font-family:var(--m);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:3px}
+.head .thesis .v{font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.32}
+
+.body{flex:1 1 auto;display:grid;gap:14px;min-height:0}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g-21{grid-template-columns:2fr 1fr}
+.g-12{grid-template-columns:1fr 2fr}
+.g-121{grid-template-columns:1.15fr 2fr 1.15fr}
+.g-32{grid-template-columns:3fr 2fr}
+.col{display:flex;flex-direction:column;gap:14px;min-height:0}
+.row{display:flex;gap:14px}
+
+/* ---------------------------------------------------------------- panels */
+.p{border:1px solid var(--rule);border-radius:5px;padding:12px 14px;background:#fff;
+  display:flex;flex-direction:column;min-height:0}
+.p.tint{background:var(--soft2)}
+.p.acc{border-color:var(--acc);background:var(--acc-t)}
+.p.ok{border-color:#9CCDB4;background:var(--ok-t)}
+.p.warn{border-color:#E4C58A;background:var(--warn-t)}
+.p.bad{border-color:#E2A6B0;background:var(--bad-t)}
+.p.vio{border-color:#BCADE0;background:var(--vio-t)}
+.p > h3{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:7px;line-height:1.2}
+.lbl{font-family:var(--m);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:6px;font-weight:600}
+.p p{font-size:13px;line-height:1.42;margin-bottom:6px}
+.p p:last-child{margin-bottom:0}
+.p ul{list-style:none;font-size:12.6px;line-height:1.4}
+.p ul li{padding-left:13px;position:relative;margin-bottom:4px}
+.p ul li::before{content:"";position:absolute;left:0;top:6px;width:5px;height:5px;
+  border-radius:50%;background:var(--acc)}
+b{color:var(--ink);font-weight:600}
+.mono{font-family:var(--m);font-variant-numeric:tabular-nums}
+
+/* ---------------------------------------------------------------- pieces */
+.kpi{border:1px solid var(--rule);border-top:4px solid var(--acc);border-radius:4px;
+  padding:11px 13px;background:#fff}
+.kpi.ok{border-top-color:var(--ok)} .kpi.warn{border-top-color:var(--warn)}
+.kpi.bad{border-top-color:var(--bad)} .kpi.vio{border-top-color:var(--vio)}
+.kpi .k{font-family:var(--m);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--faint);font-weight:600;line-height:1.25;margin-bottom:5px}
+.kpi .v{font-size:34px;font-weight:700;color:var(--ink);line-height:.95;font-variant-numeric:tabular-nums}
+.kpi .n{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.3}
+
+.pill{display:inline-block;font-family:var(--m);font-size:9.5px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:3px;white-space:nowrap}
+.pill.ok{background:var(--ok-t);color:var(--ok)}
+.pill.bad{background:var(--bad-t);color:var(--bad)}
+.pill.warn{background:var(--warn-t);color:var(--warn)}
+.pill.acc{background:var(--acc-t);color:var(--acc)}
+.pill.vio{background:var(--vio-t);color:var(--vio)}
+.pill.grey{background:var(--soft);color:var(--muted)}
+
+table{width:100%;border-collapse:collapse;font-size:12.4px}
+th{font-family:var(--m);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);font-weight:600;text-align:left;padding:0 8px 4px 0;
+  border-bottom:1.5px solid var(--ink)}
+td{padding:4.5px 8px 4.5px 0;border-bottom:1px solid var(--soft);vertical-align:top;line-height:1.3}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-family:var(--m);font-variant-numeric:tabular-nums;
+  white-space:nowrap;padding-right:0}
+tr.hi td{background:var(--acc-t);font-weight:600;color:var(--ink)}
+tr.dim td{color:var(--faint)}
+td:first-child{color:var(--ink);font-weight:500}
+
+.bars{display:flex;flex-direction:column;gap:5px}
+.bar{display:grid;grid-template-columns:128px 1fr 54px;align-items:center;gap:8px;font-size:12px}
+.bar .nm{color:var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .tr{height:15px;background:var(--soft);border-radius:2px;overflow:hidden}
+.bar .tr i{display:block;height:100%;border-radius:2px}
+.bar .vv{text-align:right;font-family:var(--m);font-weight:600;color:var(--ink);
+  font-variant-numeric:tabular-nums}
+
+.dec{display:grid;grid-template-columns:1fr;gap:7px}
+.dec .item{border:1px solid var(--rule);border-left:4px solid var(--acc);border-radius:3px;
+  padding:7px 10px;background:#fff}
+.dec .item.rej{border-left-color:var(--bad);background:var(--soft2)}
+.dec .item .t{font-size:12.8px;font-weight:600;color:var(--ink);margin-bottom:2px;
+  display:flex;gap:7px;align-items:center}
+.dec .item .d{font-size:11.6px;color:var(--muted);line-height:1.35}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:var(--m);font-size:10px;padding:3px 7px;border:1px solid var(--rule);
+  border-radius:3px;color:var(--body);background:#fff;white-space:nowrap}
+.chip.on{border-color:var(--acc);background:var(--acc-t);color:var(--acc);font-weight:600}
+
+svg{display:block;max-width:100%}
+.cap{font-size:10.8px;color:var(--faint);margin-top:5px;line-height:1.3;font-style:italic}
+
+.foot{position:absolute;left:44px;right:44px;bottom:14px;display:flex;justify-content:space-between;
+  font-family:var(--m);font-size:10px;color:var(--faint);letter-spacing:.06em;
+  border-top:1px solid var(--soft);padding-top:7px}
+
+/* ---------------------------------------------------------------- title slide */
+.title-slide{justify-content:center;padding:0 90px}
+.title-slide .eyebrow{font-family:var(--m);font-size:14px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--acc);font-weight:600;margin-bottom:16px}
+.title-slide h1{font-size:88px;font-weight:700;letter-spacing:-.035em;color:var(--ink);line-height:.94}
+.title-slide .tag{font-size:24px;color:var(--muted);margin-top:14px;line-height:1.3;max-width:900px}
+.quote{border-left:5px solid var(--acc);padding:12px 0 12px 20px;margin:26px 0 0;
+  font-size:22px;font-weight:600;color:var(--ink);line-height:1.32;max-width:900px}
+
+@page{size:1600px 900px;margin:0}
+@media print{
+  body{background:#fff}
+  .slide{margin:0;break-after:page;page-break-after:always;box-shadow:none}
+  .slide:last-child{break-after:auto;page-break-after:auto}
+}
+body.solo .slide{display:none;margin:0}
+body.solo .slide.show{display:flex}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 1 ══ -->
+<section class="slide title-slide" id="s1">
+  <div class="eyebrow">SanDisk Hackathon · Die Yield Prediction</div>
+  <h1>WaferLens</h1>
+  <div class="tag">Multi-resolution die yield prediction with interpretable spatial context.
+    We predict which currently-passing dies are about to fail — and explain each prediction by
+    resolution, all the way to the fab module to inspect.</div>
+
+  <div class="quote">Every other team hands the judges a probability.<br>We hand them a diagnosis.</div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:38px;max-width:1130px">
+    <div class="kpi"><div class="k">AUC-PR · Model B</div><div class="v">0.577</div>
+      <div class="n">Primary metric, failure class</div></div>
+    <div class="kpi ok"><div class="k">Versus incumbent screen</div><div class="v">7.9×</div>
+      <div class="n">Best classical method: NNR at 0.073</div></div>
+    <div class="kpi vio"><div class="k">Block data gain, A→B</div><div class="v">+5.3%</div>
+      <div class="n">The hackathon's core question, answered</div></div>
+    <div class="kpi warn"><div class="k">Failures caught</div><div class="v">44.6%</div>
+      <div class="n">Scrapping only 2.79% of the wafer</div></div>
+  </div>
+
+  <div style="position:absolute;right:90px;top:70px;width:300px">
+    <svg viewBox="0 0 300 300" width="300" height="300">
+      <circle cx="150" cy="150" r="132" fill="#F7F9FB" stroke="#DCE3EA"/>
+      <g stroke="#DCE3EA" stroke-width="1">
+        <g id="grid"></g>
+      </g>
+      <script/>
+      <!-- die grid -->
+      <g>
+        <rect x="60" y="60" width="180" height="180" fill="none"/>
+      </g>
+      <g id="dies"></g>
+      <circle cx="150" cy="150" r="132" fill="none" stroke="#0F1720" stroke-width="2"/>
+      <line x1="150" y1="18" x2="150" y2="34" stroke="#0F1720" stroke-width="3"/>
+      <text x="150" y="288" text-anchor="middle" font-family="IBM Plex Mono" font-size="11"
+        fill="#8C99A5">~984 DIES PER WAFER</text>
+    </svg>
+  </div>
+
+  <div class="foot" style="border:0">
+    <span>Team WaferLens · 4 engineers · 24 hours</span>
+    <span>9 September 2026</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 2 ══ -->
+<section class="slide" id="s2">
+  <div class="head">
+    <span class="sn">01</span>
+    <div><h2>The problem, and the three reasons it is hard</h2>
+      <div class="sub">Predict which dies that <b>passed</b> pre-test will fail. Already-broken dies are input, never targets.</div></div>
+    <div class="thesis"><div class="k">If you remember one thing</div>
+      <div class="v">The rare class is also the ambiguous class. Both problems compound.</div></div>
+  </div>
+
+  <div class="body g-121">
+    <!-- what the task is -->
+    <div class="col">
+      <div class="p" style="flex:1 1 auto">
+        <div class="lbl">The task, drawn</div>
+        <svg viewBox="0 0 250 250" style="margin:2px auto 0">
+          <circle cx="125" cy="118" r="104" fill="#F7F9FB" stroke="#0F1720" stroke-width="1.6"/>
+          <g id="w2"></g>
+          <text x="125" y="243" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#63727F">ONE WAFER · T0 STATE</text>
+        </svg>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:6px;font-size:11px">
+          <span><span style="display:inline-block;width:9px;height:9px;background:#B02135;vertical-align:-1px"></span> pre-test fail</span>
+          <span><span style="display:inline-block;width:9px;height:9px;background:#B07500;vertical-align:-1px"></span> will fail</span>
+          <span><span style="display:inline-block;width:9px;height:9px;background:#BFD3DE;vertical-align:-1px"></span> passes</span>
+        </div>
+        <p class="cap">6,753 dies are already dead. Of the 32,598 that look fine, 1,380 are about to fail. Those amber dies are the entire target.</p>
+      </div>
+      <div class="p bad">
+        <div class="lbl">The accuracy trap</div>
+        <div style="font-size:30px;font-weight:700;color:var(--bad);line-height:1">95.77%</div>
+        <p style="margin-top:4px">is what a model scores by predicting <b>“everything passes”</b> and catching
+        <b>zero</b> failures. We select on AUC-PR. Accuracy is reported once, then ignored.</p>
+      </div>
+    </div>
+
+    <!-- the three hard things -->
+    <div class="col">
+      <div class="p warn">
+        <h3>Hard thing 1 · Extreme imbalance</h3>
+        <div class="row" style="align-items:center;gap:16px">
+          <svg viewBox="0 0 200 54" style="flex:1 1 auto">
+            <rect x="0" y="10" width="200" height="30" fill="#EEF2F6" stroke="#DCE3EA"/>
+            <rect x="0" y="10" width="8.5" height="30" fill="#B07500"/>
+            <text x="14" y="30" font-family="IBM Plex Mono" font-size="11" fill="#0F1720">4.23% fail</text>
+            <text x="196" y="30" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="#63727F">95.77% pass</text>
+          </svg>
+        </div>
+        <p>1,380 failures in 32,598 eligible dies. Any metric that averages over both classes is
+        dominated by the majority.</p>
+      </div>
+
+      <div class="p vio">
+        <h3>Hard thing 2 · The classes almost completely overlap</h3>
+        <div class="row" style="gap:14px;align-items:center">
+          <svg viewBox="0 0 240 90" style="flex:1 1 auto">
+            <path d="M10 78 Q60 8 110 78 Z" fill="#BFD3DE" opacity=".85"/>
+            <path d="M26 78 Q76 12 126 78 Z" fill="#B07500" opacity=".55"/>
+            <line x1="10" y1="78" x2="230" y2="78" stroke="#0F1720" stroke-width="1.2"/>
+            <text x="150" y="34" font-family="IBM Plex Mono" font-size="11" fill="#0F1720">median d = 0.133</text>
+            <text x="150" y="50" font-family="IBM Plex Mono" font-size="11" fill="#63727F">best single = 0.369</text>
+            <text x="150" y="70" font-family="IBM Plex Mono" font-size="11" fill="#167A4C">pooled d = 3.44</text>
+          </svg>
+        </div>
+        <p>Individually every one of the 500 parametrics is near-useless. But they are near-independent,
+        so they <b>add in quadrature</b>. That single insight drove the whole feature design.</p>
+      </div>
+
+      <div class="p">
+        <h3>Hard thing 3 · The incumbent methods assume what is not true</h3>
+        <table>
+          <thead><tr><th>Industry screen</th><th>Assumption</th><th class="n">AUC-PR</th></tr></thead>
+          <tbody>
+            <tr><td>DPAT (3σ)</td><td>Univariate Gaussian per parameter</td><td class="n">0.045</td></tr>
+            <tr><td>GDBN (5×5)</td><td>Bad neighbours imply a bad die</td><td class="n">0.054</td></tr>
+            <tr><td>NNR (k=8)</td><td>Residual against nearest neighbours</td><td class="n">0.073</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:6px">With a median Cohen's d of 0.133 there is <b>no single parameter</b> for a
+        univariate rule to threshold on. We reproduced the published critique of DPAT on our own data.</p>
+      </div>
+    </div>
+
+    <!-- signal sources -->
+    <div class="col">
+      <div class="p acc" style="flex:1 1 auto">
+        <div class="lbl">Three resolutions of evidence</div>
+        <svg viewBox="0 0 250 300" style="margin:4px auto">
+          <rect x="14" y="8" width="222" height="60" rx="4" fill="#fff" stroke="#0E6F7C" stroke-width="1.4"/>
+          <text x="26" y="28" font-family="IBM Plex Sans" font-size="13" font-weight="600" fill="#0F1720">DIE · 500 parametrics</text>
+          <text x="26" y="45" font-family="IBM Plex Mono" font-size="10" fill="#63727F">electrical measurements</text>
+          <text x="26" y="60" font-family="IBM Plex Mono" font-size="10" fill="#0E6F7C">what this chip measured</text>
+
+          <rect x="14" y="82" width="222" height="60" rx="4" fill="#fff" stroke="#6B4EA8" stroke-width="1.4"/>
+          <text x="26" y="102" font-family="IBM Plex Sans" font-size="13" font-weight="600" fill="#0F1720">SPATIAL · position + m×m</text>
+          <text x="26" y="119" font-family="IBM Plex Mono" font-size="10" fill="#63727F">neighbourhood, radius, wafer rate</text>
+          <text x="26" y="134" font-family="IBM Plex Mono" font-size="10" fill="#6B4EA8">where it sits on the wafer</text>
+
+          <rect x="14" y="156" width="222" height="60" rx="4" fill="#fff" stroke="#167A4C" stroke-width="1.4"/>
+          <text x="26" y="176" font-family="IBM Plex Sans" font-size="13" font-weight="600" fill="#0F1720">BLOCK · 2,000 readings</text>
+          <text x="26" y="193" font-family="IBM Plex Mono" font-size="10" fill="#63727F">sub-die process variation</text>
+          <text x="26" y="208" font-family="IBM Plex Mono" font-size="10" fill="#167A4C">what is happening inside it</text>
+
+          <path d="M125 68 L125 82" stroke="#8C99A5" stroke-width="1.4" marker-end="url(#a2)"/>
+          <path d="M125 142 L125 156" stroke="#8C99A5" stroke-width="1.4" marker-end="url(#a2)"/>
+          <path d="M125 216 L125 240" stroke="#0F1720" stroke-width="1.8" marker-end="url(#a2)"/>
+          <rect x="34" y="242" width="182" height="46" rx="4" fill="#0F1720"/>
+          <text x="125" y="262" text-anchor="middle" font-family="IBM Plex Sans" font-size="13"
+            font-weight="600" fill="#fff">ONE DIAGNOSIS</text>
+          <text x="125" y="278" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5"
+            fill="#9DB0BC">risk + interval + attribution + cause</text>
+          <defs><marker id="a2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0 0 L7 3.5 L0 7 Z" fill="#0F1720"/></marker></defs>
+        </svg>
+        <p class="cap">Recon proved these channels are independent: neighbourhood badness does not show up in
+        a die's own parameters (r = +0.015). So they are fused, not substituted.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>WaferLens · The problem</span><span>01 / 10</span></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 3 ══ -->
+<section class="slide" id="s3">
+  <div class="head">
+    <span class="sn">02</span>
+    <div><h2>We measured for two hours before we modelled for one</h2>
+      <div class="sub">Five questions. Each answer forced an architectural decision. This is why the system looks the way it does.</div></div>
+    <div class="thesis"><div class="k">Method</div>
+      <div class="v">Every design choice below is downstream of a measurement, not of a preference.</div></div>
+  </div>
+
+  <div class="body" style="grid-template-rows:auto 1fr">
+    <table style="font-size:12.8px">
+      <thead><tr><th style="width:15%">Question</th><th style="width:32%">What we measured</th>
+        <th style="width:29%">Decision it forced</th><th style="width:24%">What we would have done otherwise</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Q1 · Failure rate</td>
+          <td><b>4.18%</b> of eligible dies newly fail — inside the stated 2–5% band. All-pass scores ~95.8%.</td>
+          <td>Select on <b>AUC-PR</b>; log accuracy but never optimise it.</td>
+          <td class="dim">Reported accuracy and looked excellent while catching nothing.</td>
+        </tr>
+        <tr>
+          <td>Q2 · Are blocks ordered?</td>
+          <td><b>Ordered.</b> Lag-1 autocorrelation <b>0.250</b> vs a shuffled control of +0.001, decaying to 0 by lag 5.</td>
+          <td>Run-length features are meaningful; attention has a real contiguous cluster to point at.</td>
+          <td class="dim">Treated 2,000 readings as an unordered bag and thrown away the structure.</td>
+        </tr>
+        <tr>
+          <td>Q3 · Does GDBN's premise hold?</td>
+          <td><b>Barely.</b> 5×5 bad-neighbour ratio vs failure: <b>+0.012</b> pooled, +0.018 within wafer. Between wafers: <b>−0.187</b>.</td>
+          <td>Build the neighbourhood factory but expect little — put the effort into the <b>wafer-level rate</b>.</td>
+          <td class="dim">Invested in multi-scale neighbourhood features that later measured <b>−0.008</b>.</td>
+        </tr>
+        <tr>
+          <td>Q4 · Are splits clean?</td>
+          <td>All three overlaps zero — <b>because we enforce it</b>. And the kit's <code>validation.parquet</code> is <b>test with labels dropped</b>.</td>
+          <td>By-wafer split with a hard assertion; validation carved from train.</td>
+          <td class="dim">Tuned on the test set without knowing it. Every number invalid.</td>
+        </tr>
+        <tr class="hi">
+          <td>Q5 · Class overlap</td>
+          <td>Median Cohen's d <b>0.133</b>, best single feature 0.369 — but near-independent, so aggregate <b>d = 3.44</b>.</td>
+          <td>Build an <b>explicit pooled anomaly score</b> over all 500 and feed the tree one strong feature.</td>
+          <td class="dim">Hoped a tree would find one good feature among 500 weak ones. It cannot.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="row" style="margin-top:2px">
+      <div class="p" style="flex:1 1 0">
+        <div class="lbl">Q2 · Autocorrelation decay proves ordering</div>
+        <svg viewBox="0 0 300 108">
+          <line x1="30" y1="88" x2="290" y2="88" stroke="#0F1720" stroke-width="1.2"/>
+          <line x1="30" y1="12" x2="30" y2="88" stroke="#0F1720" stroke-width="1.2"/>
+          <g fill="#0E6F7C">
+            <rect x="44" y="20" width="30" height="68"/><rect x="90" y="24" width="30" height="64"/>
+            <rect x="136" y="81" width="30" height="7"/><rect x="182" y="87" width="30" height="1.5"/>
+            <rect x="228" y="87" width="30" height="1.5"/>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="9" fill="#63727F" text-anchor="middle">
+            <text x="59" y="100">lag1</text><text x="105" y="100">lag2</text><text x="151" y="100">lag3</text>
+            <text x="197" y="100">lag5</text><text x="243" y="100">lag10</text>
+          </g>
+          <text x="59" y="15" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" font-weight="600" fill="#0F1720">.250</text>
+          <line x1="30" y1="86" x2="290" y2="86" stroke="#B02135" stroke-dasharray="3 3"/>
+          <text x="286" y="80" text-anchor="end" font-family="IBM Plex Mono" font-size="8.5" fill="#B02135">shuffled control</text>
+        </svg>
+      </div>
+      <div class="p" style="flex:1 1 0">
+        <div class="lbl">Q5 · Weak features add in quadrature</div>
+        <svg viewBox="0 0 300 108">
+          <g fill="#BFD3DE">
+            <rect x="20" y="80" width="9" height="8"/><rect x="33" y="82" width="9" height="6"/>
+            <rect x="46" y="79" width="9" height="9"/><rect x="59" y="83" width="9" height="5"/>
+            <rect x="72" y="81" width="9" height="7"/><rect x="85" y="84" width="9" height="4"/>
+            <rect x="98" y="80" width="9" height="8"/><rect x="111" y="82" width="9" height="6"/>
+          </g>
+          <text x="20" y="72" font-family="IBM Plex Mono" font-size="9.5" fill="#63727F">500 weak features · d ≈ 0.13 each</text>
+          <path d="M132 76 L166 76" stroke="#0F1720" stroke-width="1.6" marker-end="url(#a3)"/>
+          <rect x="176" y="18" width="112" height="70" fill="#167A4C"/>
+          <text x="232" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="17"
+            font-weight="600" fill="#fff">d = 3.44</text>
+          <text x="232" y="68" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#B9E0CB">pooled anomaly score</text>
+          <defs><marker id="a3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0 0 L7 3.5 L0 7 Z" fill="#0F1720"/></marker></defs>
+        </svg>
+      </div>
+      <div class="p ok" style="flex:1.15 1 0">
+        <h3>The trap we found in the supplied kit</h3>
+        <p><code>validation.parquet</code> is <code>test.parquet</code> with the label column dropped —
+        the <b>same wafers</b>, identical row count. It is not a third split.</p>
+        <p>Any team that tuned on it tuned on the test set. We carve validation out of <b>train</b> by
+        wafer and keep test as a true holdout, using the kit's file only to write the submission.</p>
+        <span class="pill ok">Caught in hour 2</span>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>WaferLens · Recon before modelling</span><span>02 / 10</span></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 4 ══ -->
+<section class="slide" id="s4">
+  <div class="head">
+    <span class="sn">03</span>
+    <div><h2>System architecture — 2,500 raw inputs to one work order</h2>
+      <div class="sub">One command runs the whole thing. Every stage writes an artifact; every artifact is what the console reads.</div></div>
+    <div class="thesis"><div class="k">Why it held together in 24h</div>
+      <div class="v">A frozen output contract agreed in hour one. Four people, zero integration stalls.</div></div>
+  </div>
+
+  <div class="body g-32">
+    <div class="p" style="padding:10px 12px">
+      <div class="lbl">End-to-end pipeline</div>
+      <svg viewBox="0 0 620 430">
+        <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <path d="M0 0 L8 4 L0 8 Z" fill="#63727F"/></marker></defs>
+        <!-- inputs -->
+        <rect x="6" y="14" width="130" height="34" rx="3" fill="#F7F9FB" stroke="#DCE3EA"/>
+        <text x="71" y="30" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0F1720">500 parametrics</text>
+        <text x="71" y="42" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#8C99A5">per die</text>
+        <rect x="6" y="56" width="130" height="34" rx="3" fill="#F7F9FB" stroke="#DCE3EA"/>
+        <text x="71" y="72" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0F1720">grid position</text>
+        <text x="71" y="84" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#8C99A5">+ pre-test map</text>
+        <rect x="6" y="98" width="130" height="34" rx="3" fill="#F7F9FB" stroke="#DCE3EA"/>
+        <text x="71" y="114" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0F1720">2,000 blocks</text>
+        <text x="71" y="126" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#8C99A5">float16 memmap</text>
+
+        <!-- feature families -->
+        <rect x="176" y="10" width="140" height="42" rx="3" fill="#fff" stroke="#0E6F7C" stroke-width="1.5"/>
+        <text x="246" y="27" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0E6F7C">DIE FEATURES</text>
+        <text x="246" y="43" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#63727F">z-score · pooled anomaly</text>
+
+        <rect x="176" y="60" width="140" height="42" rx="3" fill="#fff" stroke="#6B4EA8" stroke-width="1.5"/>
+        <text x="246" y="77" text-anchor="middle" font-size="11.5" font-weight="600" fill="#6B4EA8">SPATIAL FEATURES</text>
+        <text x="246" y="93" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#63727F">m×m · radial · wafer prior</text>
+
+        <rect x="176" y="110" width="140" height="42" rx="3" fill="#fff" stroke="#167A4C" stroke-width="1.5"/>
+        <text x="246" y="127" text-anchor="middle" font-size="11.5" font-weight="600" fill="#167A4C">BLOCK FEATURES</text>
+        <text x="246" y="143" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#63727F">25 stats · run length</text>
+
+        <path d="M136 31 L176 31" stroke="#63727F" marker-end="url(#ar)"/>
+        <path d="M136 73 L176 81" stroke="#63727F" marker-end="url(#ar)"/>
+        <path d="M136 115 L176 131" stroke="#63727F" marker-end="url(#ar)"/>
+
+        <text x="246" y="170" text-anchor="middle" font-family="IBM Plex Mono" font-size="10"
+          font-weight="600" fill="#0F1720">2,500 raw → 88 engineered features</text>
+
+        <!-- models -->
+        <rect x="356" y="10" width="128" height="44" rx="3" fill="#E2F1F3" stroke="#0E6F7C" stroke-width="1.5"/>
+        <text x="420" y="29" text-anchor="middle" font-size="12" font-weight="700" fill="#0F1720">MODEL A</text>
+        <text x="420" y="45" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#0E6F7C">LightGBM · 0.5476</text>
+
+        <rect x="356" y="66" width="128" height="44" rx="3" fill="#E4F3EB" stroke="#167A4C" stroke-width="1.5"/>
+        <text x="420" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#0F1720">MODEL B · pooling</text>
+        <text x="420" y="101" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#167A4C">SHIPPED · 0.5767</text>
+
+        <rect x="356" y="122" width="128" height="44" rx="3" fill="#F7F9FB" stroke="#B0BCC7" stroke-dasharray="4 3"/>
+        <text x="420" y="141" text-anchor="middle" font-size="12" font-weight="600" fill="#63727F">MODEL B · attn-MIL</text>
+        <text x="420" y="157" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#8C99A5">built, measured, benched</text>
+
+        <path d="M316 31 L356 31" stroke="#63727F" marker-end="url(#ar)"/>
+        <path d="M316 81 L356 84" stroke="#63727F" marker-end="url(#ar)"/>
+        <path d="M316 131 L356 140" stroke="#63727F" marker-end="url(#ar)"/>
+
+        <!-- decision layer -->
+        <rect x="356" y="192" width="258" height="34" rx="3" fill="#fff" stroke="#DCE3EA"/>
+        <text x="485" y="208" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0F1720">Isotonic calibration + bootstrap interval</text>
+        <text x="485" y="220" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#8C99A5">fitted on VALIDATION only · Brier 0.064 → 0.025</text>
+
+        <rect x="356" y="234" width="258" height="34" rx="3" fill="#fff" stroke="#DCE3EA"/>
+        <text x="485" y="250" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0F1720">Cost-priced threshold sweep</text>
+        <text x="485" y="262" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#8C99A5">shipped cut 0.2833 · never left at 0.5</text>
+
+        <rect x="356" y="276" width="258" height="34" rx="3" fill="#fff" stroke="#DCE3EA"/>
+        <text x="485" y="292" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0F1720">Tree-SHAP → attribution by resolution</text>
+        <text x="485" y="304" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#8C99A5">die / spatial / block shares sum to 1.0</text>
+
+        <rect x="356" y="318" width="258" height="34" rx="3" fill="#fff" stroke="#DCE3EA"/>
+        <text x="485" y="334" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0F1720">Signature → physical root cause</text>
+        <text x="485" y="346" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#8C99A5">auditable rule set, 9 classes</text>
+
+        <path d="M420 110 L420 192" stroke="#0F1720" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <rect x="356" y="366" width="258" height="46" rx="3" fill="#0F1720"/>
+        <text x="485" y="386" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">FAB WORK ORDER</text>
+        <text x="485" y="402" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#9DB0BC">quarantine list + module to inspect</text>
+        <path d="M485 352 L485 366" stroke="#0F1720" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <!-- left rail: recon + guards -->
+        <rect x="6" y="192" width="320" height="220" rx="3" fill="#F7F9FB" stroke="#DCE3EA"/>
+        <text x="20" y="212" font-family="IBM Plex Mono" font-size="9.5" font-weight="600"
+          letter-spacing="1.2" fill="#8C99A5">GUARDRAILS ENFORCED IN CODE</text>
+        <g font-size="11" fill="#2B3743">
+          <text x="20" y="234">▪ Split BY WAFER — asserted every run</text>
+          <text x="20" y="254">▪ Train and score only on old_label == 0</text>
+          <text x="20" y="274">▪ Nothing fitted on validation or test</text>
+          <text x="20" y="294">▪ Threshold tuned on the validation PR curve</text>
+          <text x="20" y="314">▪ Seeds fixed: numpy, random, torch, model</text>
+          <text x="20" y="334">▪ Every run appends a row to results.csv</text>
+          <text x="20" y="354">▪ Supplied generator read and wrapped, never edited</text>
+          <text x="20" y="374">▪ No per-die Python loops — vectorised ndimage</text>
+        </g>
+        <text x="20" y="398" font-family="IBM Plex Mono" font-size="9" fill="#B02135">Break any one of these and the results are meaningless.</text>
+      </svg>
+    </div>
+
+    <div class="col">
+      <div class="p acc">
+        <h3>The frozen contract</h3>
+        <p style="font-size:12.3px">Agreed hour one, never changed. Every model returns
+        <code>list[DiePrediction]</code>. The explainer, metrics module and console consume nothing else.</p>
+        <table style="font-size:11.6px;margin-top:4px">
+          <tr><td>p_fail · y_pred</td><td style="color:var(--muted)">calibrated risk, decision</td></tr>
+          <tr><td>attribution</td><td style="color:var(--muted)">die / spatial / block, sums to 1</td></tr>
+          <tr><td>top_features</td><td style="color:var(--muted)">5 signed SHAP values</td></tr>
+          <tr><td>block_attention</td><td style="color:var(--muted)">per-chunk weights, B only</td></tr>
+          <tr><td>conformal_lo / hi</td><td style="color:var(--muted)">uncertainty band</td></tr>
+          <tr><td>root_cause</td><td style="color:var(--muted)">signature · cause · action</td></tr>
+        </table>
+      </div>
+      <div class="p">
+        <h3>Built in waves, not phases</h3>
+        <p style="font-size:12.3px">Every wave ends with the <b>whole</b> pipeline running end to end and a
+        tagged commit — never one perfect component beside three that do not exist.</p>
+        <div class="bars" style="margin-top:6px">
+          <div class="bar"><span class="nm">Wave 1 · exists</span><span class="tr"><i style="width:35%;background:#BFD3DE"></i></span><span class="vv">ship</span></div>
+          <div class="bar"><span class="nm">Wave 2 · core good</span><span class="tr"><i style="width:62%;background:#8FB6C9"></i></span><span class="vv">ship</span></div>
+          <div class="bar"><span class="nm">Wave 3 · strong</span><span class="tr"><i style="width:85%;background:#0E6F7C"></i></span><span class="vv">ship</span></div>
+          <div class="bar"><span class="nm">Wave 4 · extras</span><span class="tr"><i style="width:100%;background:#167A4C"></i></span><span class="vv">ship</span></div>
+        </div>
+      </div>
+      <div class="p tint">
+        <h3>Scale of the build</h3>
+        <div class="row" style="gap:10px">
+          <div style="flex:1"><div style="font-size:26px;font-weight:700;color:var(--ink)">4,626</div>
+            <div style="font-size:11px;color:var(--muted)">lines of pipeline, 19 modules</div></div>
+          <div style="flex:1"><div style="font-size:26px;font-weight:700;color:var(--ink)">2,200</div>
+            <div style="font-size:11px;color:var(--muted)">lines of console, zero new deps</div></div>
+          <div style="flex:1"><div style="font-size:26px;font-weight:700;color:var(--ink)">200</div>
+            <div style="font-size:11px;color:var(--muted)">logged experiment runs</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>WaferLens · Architecture</span><span>03 / 10</span></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 5 ══ -->
+<section class="slide" id="s5">
+  <div class="head">
+    <span class="sn">04</span>
+    <div><h2>Every choice, the alternative, and the number that decided it</h2>
+      <div class="sub">Nothing here was picked by preference. Each row is a measured comparison against the option we did not take.</div></div>
+    <div class="thesis"><div class="k">Rule we worked to</div>
+      <div class="v">If we cannot show the number that rejected the alternative, we have not made a decision.</div></div>
+  </div>
+
+  <div class="body g2">
+    <div class="col">
+      <div class="p">
+        <div class="lbl">Decision 1 · How to handle the 2,000 block readings</div>
+        <div class="dec">
+          <div class="item rej"><div class="t">Feed all 2,000 raw values to the model <span class="pill bad">rejected</span></div>
+            <div class="d">32,598 dies × 2,000 columns is 65M values. Trees cannot use it and the run would not finish in the window.</div></div>
+          <div class="item rej"><div class="t">1D-CNN over the block sequence <span class="pill bad">not built</span></div>
+            <div class="d">Viable — recon Q2 proved the readings are ordered — but it needs tuning time we did not have. Documented as future work.</div></div>
+          <div class="item"><div class="t">Attention-MIL, Ilse et al. 2018 <span class="pill warn">built, benched</span></div>
+            <div class="d">Gated attention <code>tanh(V)⊙σ(U)</code> makes block interpretability architectural. Scored 0.60 on early runs, <b>0.27</b> on the shipped run. Unstable — not shipped.</div></div>
+          <div class="item"><div class="t">25 statistical aggregates <span class="pill ok">shipped</span></div>
+            <div class="d">Mean, spread, extremes, hot-block count, longest contiguous excursion, autocorrelation. <b>+0.029 AUC-PR</b> over Model A, stable across runs.</div></div>
+        </div>
+      </div>
+
+      <div class="p">
+        <div class="lbl">Decision 2 · How to use spatial context</div>
+        <div class="dec">
+          <div class="item rej"><div class="t">Classical GDBN rule <span class="pill bad">baseline only</span></div>
+            <div class="d">Hand-set bad-neighbour threshold. We implemented it as a baseline: <b>0.054 AUC-PR</b>. Kept for comparison, not for use.</div></div>
+          <div class="item rej"><div class="t">Multi-scale neighbourhood factory <span class="pill bad">measured −0.008</span></div>
+            <div class="d">We expected this to be the win. The ablation says it <b>cost</b> us AUC-PR. Reported, not deleted.</div></div>
+          <div class="item"><div class="t">Transductive wafer prior <span class="pill ok">shipped · +0.046</span></div>
+            <div class="d">Recon Q3 said the wafer's own failure rate carries the spatial signal, not the neighbourhood. Largest single feature win in the whole ablation.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="p">
+        <div class="lbl">Decision 3 · Estimator</div>
+        <table>
+          <thead><tr><th>Option</th><th>Why not / why yes</th><th class="n">Verdict</th></tr></thead>
+          <tbody>
+            <tr><td>Deep tabular net</td><td>500 heterogeneous features, 24-hour budget, no SHAP path</td><td class="n"><span class="pill bad">no</span></td></tr>
+            <tr><td>Random forest</td><td>Weaker on ranking; no native monotone or focal loss</td><td class="n"><span class="pill bad">no</span></td></tr>
+            <tr class="hi"><td>LightGBM</td><td>Tabular-native, seconds to train, exact tree-SHAP</td><td class="n"><span class="pill ok">yes</span></td></tr>
+          </tbody>
+        </table>
+        <p class="cap">Tree-SHAP is the deciding factor: deliverable 4 needs exact per-die attribution, and only a tree gives it exactly rather than by sampling.</p>
+      </div>
+
+      <div class="p">
+        <div class="lbl">Decision 4 · How to explain a block prediction</div>
+        <div class="row" style="gap:12px;align-items:stretch">
+          <div style="flex:1;border:1px solid var(--rule);border-radius:4px;padding:9px;background:var(--soft2)">
+            <div style="font-size:12.4px;font-weight:600;color:var(--ink);margin-bottom:3px">Post-hoc SHAP over 2,000 dims</div>
+            <div style="font-size:11.4px;color:var(--muted);line-height:1.35">Approximate, slow, and explains a
+            surrogate rather than the model. <span class="pill bad">rejected</span></div>
+          </div>
+          <div style="flex:1;border:1px solid var(--acc);border-radius:4px;padding:9px;background:var(--acc-t)">
+            <div style="font-size:12.4px;font-weight:600;color:var(--ink);margin-bottom:3px">Attention weights that <i>are</i> the model</div>
+            <div style="font-size:11.4px;color:var(--muted);line-height:1.35">The weight the model used to
+            decide is the explanation. Nothing is approximated. <span class="pill acc">architectural</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p">
+        <div class="lbl">Decision 5 · How to express uncertainty</div>
+        <table>
+          <thead><tr><th>Method</th><th class="n">Width</th><th class="n">Coverage</th><th>Outcome</th></tr></thead>
+          <tbody>
+            <tr class="dim"><td>Venn-ABERS (Vovk 2014)</td><td class="n">0.0017</td><td class="n">11%</td><td>Degenerate at n=29,532 — width shrinks as O(1/n)</td></tr>
+            <tr class="hi"><td>Bootstrap over calibration set</td><td class="n">0.0121</td><td class="n">67%</td><td>Answers the question an engineer is actually asking</td></tr>
+          </tbody>
+        </table>
+        <p class="cap">We built the textbook answer first, measured it, found it useless here, and shipped the alternative — reporting both.</p>
+      </div>
+
+      <div class="p tint">
+        <div class="lbl">Decision 6 · Why a console at all</div>
+        <p style="font-size:12.4px">A Streamlit dashboard was the obvious route and was in the plan. We
+        wrote the console on the <b>Python standard library</b> instead — no build step, no new dependency,
+        nothing that can fail on a demo machine. It is also the reason we can start a real training run
+        live in front of a judge.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>WaferLens · Decisions and rejected alternatives</span><span>04 / 10</span></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 6 ══ -->
+<section class="slide" id="s6">
+  <div class="head">
+    <span class="sn">05</span>
+    <div><h2>Class imbalance — six strategies, measured after every rung</h2>
+      <div class="sub">Deliverable 5. We report the rungs that failed as carefully as the one that won.</div></div>
+    <div class="thesis"><div class="k">The finding that surprised us</div>
+      <div class="v">The biggest lever changes no model at all. It only changes where you cut.</div></div>
+  </div>
+
+  <div class="body g-32">
+    <div class="col">
+      <div class="p" style="flex:1 1 auto">
+        <div class="lbl">The ladder · AUC-PR after each rung</div>
+        <div class="bars" style="margin-top:4px">
+          <div class="bar"><span class="nm">0 · No weighting</span><span class="tr"><i style="width:81%;background:#BFD3DE"></i></span><span class="vv">.5849</span></div>
+          <div class="bar"><span class="nm">1 · Balanced weights</span><span class="tr"><i style="width:82%;background:#8FB6C9"></i></span><span class="vv">.5859</span></div>
+          <div class="bar"><span class="nm">2 · + tuned threshold</span><span class="tr"><i style="width:82%;background:#0E6F7C"></i></span><span class="vv">.5859</span></div>
+          <div class="bar"><span class="nm">3 · Per-wafer weights</span><span class="tr"><i style="width:70%;background:#B02135"></i></span><span class="vv">.5729</span></div>
+          <div class="bar"><span class="nm">4 · Focal loss γ=2</span><span class="tr"><i style="width:100%;background:#167A4C"></i></span><span class="vv">.5880</span></div>
+          <div class="bar"><span class="nm">5 · SMOTE</span><span class="tr"><i style="width:48%;background:#B02135"></i></span><span class="vv">.5607</span></div>
+        </div>
+        <p class="cap">Bars scaled between 0.55 and 0.59 so the differences are visible. Green is what shipped as the imbalance strategy; red is measured harm.</p>
+
+        <div class="p acc" style="margin-top:10px;padding:10px 12px">
+          <div class="lbl" style="margin-bottom:4px">Rung 1 → 2 · the free lever</div>
+          <svg viewBox="0 0 420 74">
+            <text x="0" y="14" font-family="IBM Plex Mono" font-size="10" fill="#63727F">SAME MODEL · SAME AUC-PR 0.5859 · ONLY THE CUT MOVES</text>
+            <rect x="0" y="24" width="150" height="22" fill="#BFD3DE"/>
+            <text x="8" y="39" font-family="IBM Plex Mono" font-size="11" fill="#0F1720">F1 0.4230 @ cut 0.50</text>
+            <path d="M162 35 L192 35" stroke="#0F1720" stroke-width="1.6" marker-end="url(#a6)"/>
+            <rect x="200" y="24" width="190" height="22" fill="#167A4C"/>
+            <text x="208" y="39" font-family="IBM Plex Mono" font-size="11" fill="#fff">F1 0.5491 @ cut 0.826</text>
+            <text x="0" y="66" font-family="IBM Plex Sans" font-size="11.5" fill="#0F1720">
+              +0.126 F1 for zero training cost. Ranking was never the problem.</text>
+            <defs><marker id="a6" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+              <path d="M0 0 L7 3.5 L0 7 Z" fill="#0F1720"/></marker></defs>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="p ok">
+        <h3>What worked, and why</h3>
+        <ul>
+          <li><b>Threshold tuning.</b> Biggest lever, costs nothing. This is why our constraints file
+            forbids leaving a threshold at 0.5.</li>
+          <li><b>Focal loss (Lin et al. 2017).</b> Down-weights easy examples so gradient budget reaches
+            the ambiguous overlap — where <b>65%</b> of this dataset's failures sit by construction.</li>
+        </ul>
+      </div>
+      <div class="p bad">
+        <h3>What failed, and why we say so</h3>
+        <ul>
+          <li><b>Class weighting alone.</b> Recall 0.371 → 0.617 but AUC-PR barely moves. It relabels the
+            same ranking rather than adding information. This is the most common mistake in the room.</li>
+          <li><b>Per-wafer adaptive weights.</b> We expected a win. Measured <b>0.5729 vs 0.5859</b>.
+            Likely redundant with the transductive wafer prior, which already gives the model each
+            wafer's rate.</li>
+          <li><b>SMOTE (Chawla et al. 2002).</b> Worst rung at <b>0.5607</b>. Synthetic points are
+            interpolated between failures, and at d = 0.134 those land inside the pass distribution.
+            You cannot resolve an overlap by manufacturing more points inside it.</li>
+        </ul>
+      </div>
+      <div class="p">
+        <h3>Where the operating point actually goes</h3>
+        <table>
+          <thead><tr><th>Yield loss</th><th class="n">Recall</th><th class="n">Precision</th><th class="n">Escaped</th></tr></thead>
+          <tbody>
+            <tr><td>20%</td><td class="n">0.800</td><td class="n">0.169</td><td class="n">276</td></tr>
+            <tr><td>10%</td><td class="n">0.670</td><td class="n">0.284</td><td class="n">455</td></tr>
+            <tr class="hi"><td>5%</td><td class="n">0.554</td><td class="n">0.469</td><td class="n">616</td></tr>
+            <tr><td>2%</td><td class="n">0.401</td><td class="n">0.850</td><td class="n">826</td></tr>
+            <tr class="dim"><td>1%</td><td class="n">0.236</td><td class="n">1.000</td><td class="n">1,054</td></tr>
+          </tbody>
+        </table>
+        <p class="cap">This is a business decision, not a modelling one — which is why the console exposes it as a slider rather than burying it in a config file.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>WaferLens · Imbalance</span><span>05 / 10</span></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 7 ══ -->
+<section class="slide" id="s7">
+  <div class="head">
+    <span class="sn">06</span>
+    <div><h2>Results — measured against what the industry actually uses</h2>
+      <div class="sub">Held-out test wafers, eligible dies only. 40 wafers · 32,598 dies · 1,380 new failures (4.23%).</div></div>
+    <div class="thesis"><div class="k">Why the baselines matter</div>
+      <div class="v">“0.58 AUC-PR” means nothing on its own. Against the incumbent screens it means 7.9×.</div></div>
+  </div>
+
+  <div class="body g-32">
+    <div class="col">
+      <div class="p" style="flex:1 1 auto">
+        <div class="lbl">AUC-PR on the failure class · same wafers, same dies</div>
+        <div class="bars" style="margin-top:6px">
+          <div class="bar"><span class="nm" style="color:#8C99A5">all-pass (the trap)</span><span class="tr"><i style="width:7%;background:#C7D1DA"></i></span><span class="vv" style="color:#8C99A5">.0423</span></div>
+          <div class="bar"><span class="nm">DPAT (3σ)</span><span class="tr"><i style="width:7.9%;background:#B07500"></i></span><span class="vv">.0454</span></div>
+          <div class="bar"><span class="nm">GDBN (5×5)</span><span class="tr"><i style="width:9.3%;background:#B07500"></i></span><span class="vv">.0536</span></div>
+          <div class="bar"><span class="nm">NNR (k=8)</span><span class="tr"><i style="width:12.7%;background:#B07500"></i></span><span class="vv">.0734</span></div>
+          <div class="bar"><span class="nm"><b>Model A</b> die+spatial</span><span class="tr"><i style="width:95%;background:#0E6F7C"></i></span><span class="vv">.5476</span></div>
+          <div class="bar"><span class="nm"><b>Model B</b> +2,000 blocks</span><span class="tr"><i style="width:100%;background:#167A4C"></i></span><span class="vv">.5767</span></div>
+        </div>
+        <div class="row" style="margin-top:10px;gap:10px">
+          <div class="kpi ok" style="flex:1"><div class="k">Lift over best incumbent</div><div class="v">7.9×</div></div>
+          <div class="kpi vio" style="flex:1"><div class="k">A → B, block gain</div><div class="v">+5.3%</div></div>
+          <div class="kpi" style="flex:1"><div class="k">Precision A → B</div><div class="v">.64→.68</div></div>
+        </div>
+        <p class="cap">Precision improves most: the block signal mainly removes false alarms rather than finding new failures. We say that rather than claiming a breakthrough.</p>
+      </div>
+
+      <div class="p">
+        <div class="lbl">Component ablation · each row rebuilds the model with one more part switched on</div>
+        <svg viewBox="0 0 700 132">
+          <line x1="0" y1="112" x2="700" y2="112" stroke="#DCE3EA"/>
+          <g font-family="IBM Plex Mono" font-size="9.5" fill="#63727F" text-anchor="middle">
+            <text x="58" y="126">raw 500</text><text x="188" y="126">+wafer prior</text>
+            <text x="318" y="126">+spatial v2</text><text x="448" y="126">+anomaly</text>
+            <text x="578" y="126">+blocks</text><text x="668" y="126">final</text>
+          </g>
+          <!-- floating bars -->
+          <rect x="20" y="70" width="76" height="42" fill="#BFD3DE"/>
+          <text x="58" y="63" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#0F1720">.4814</text>
+
+          <rect x="150" y="52" width="76" height="18" fill="#167A4C"/>
+          <text x="188" y="45" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#167A4C">+.0463</text>
+
+          <rect x="280" y="52" width="76" height="4" fill="#B02135"/>
+          <text x="318" y="45" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#B02135">−.0079</text>
+
+          <rect x="410" y="41" width="76" height="12" fill="#167A4C"/>
+          <text x="448" y="34" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#167A4C">+.0278</text>
+
+          <rect x="540" y="26" width="76" height="15" fill="#167A4C"/>
+          <text x="578" y="19" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#167A4C">+.0354</text>
+
+          <rect x="640" y="24" width="50" height="88" fill="#0F1720"/>
+          <text x="665" y="17" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" font-weight="600" fill="#0F1720">.5859</text>
+        </svg>
+        <p class="cap">The red bar is the multi-scale spatial factory we expected to help. It cost 0.008 AUC-PR and stays in the chart.</p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="p">
+        <div class="lbl">Confusion at the shipped cut · 0.2833</div>
+        <svg viewBox="0 0 320 150">
+          <text x="96" y="12" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#63727F">PREDICTED FAIL</text>
+          <text x="234" y="12" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#63727F">PREDICTED PASS</text>
+          <text x="8" y="52" font-family="IBM Plex Mono" font-size="9.5" fill="#63727F">ACTUAL</text>
+          <text x="8" y="64" font-family="IBM Plex Mono" font-size="9.5" fill="#63727F">FAIL</text>
+          <text x="8" y="110" font-family="IBM Plex Mono" font-size="9.5" fill="#63727F">ACTUAL</text>
+          <text x="8" y="122" font-family="IBM Plex Mono" font-size="9.5" fill="#63727F">PASS</text>
+          <rect x="52" y="20" width="132" height="58" fill="#E4F3EB" stroke="#167A4C"/>
+          <text x="118" y="52" text-anchor="middle" font-size="26" font-weight="700" fill="#167A4C">616</text>
+          <text x="118" y="68" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#167A4C">CAUGHT</text>
+          <rect x="188" y="20" width="126" height="58" fill="#FBE8EB" stroke="#B02135"/>
+          <text x="251" y="52" text-anchor="middle" font-size="26" font-weight="700" fill="#B02135">764</text>
+          <text x="251" y="68" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#B02135">ESCAPED</text>
+          <rect x="52" y="82" width="132" height="58" fill="#FBF0DC" stroke="#B07500"/>
+          <text x="118" y="114" text-anchor="middle" font-size="26" font-weight="700" fill="#B07500">293</text>
+          <text x="118" y="130" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#B07500">FALSE ALARM</text>
+          <rect x="188" y="82" width="126" height="58" fill="#F7F9FB" stroke="#DCE3EA"/>
+          <text x="251" y="114" text-anchor="middle" font-size="22" font-weight="700" fill="#63727F">30,925</text>
+          <text x="251" y="130" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#8C99A5">CORRECT PASS</text>
+        </svg>
+        <p class="cap">We flag 909 dies — 2.79% of the wafer — and 67.8% of those flags are correct.</p>
+      </div>
+
+      <div class="p warn">
+        <h3>The number we are not hiding</h3>
+        <p>At the shipped cut the escape rate is <b>55.4%</b>. More than half of real failures still get
+        through. That is an operating point, not a ceiling: recall reaches <b>80.7%</b> at a 22.8% yield
+        cost. The console lets a judge move it and watch both sides change.</p>
+      </div>
+
+      <div class="p tint">
+        <h3>A → B, die by die</h3>
+        <table style="font-size:11.8px">
+          <tbody>
+            <tr><td>Rescued by block data</td><td class="n" style="color:var(--ok)">+49</td></tr>
+            <tr><td>Lost by block data</td><td class="n" style="color:var(--bad)">−24</td></tr>
+            <tr class="hi"><td>Net defect capture</td><td class="n">+25 dies</td></tr>
+            <tr><td>False alarms removed</td><td class="n" style="color:var(--ok)">132</td></tr>
+            <tr><td>False alarms introduced</td><td class="n" style="color:var(--bad)">81</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>WaferLens · Results</span><span>06 / 10</span></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 8 ══ -->
+<section class="slide" id="s8">
+  <div class="head">
+    <span class="sn">07</span>
+    <div><h2>From probability to work order — the differentiator</h2>
+      <div class="sub">Deliverable 4. Attribution is decomposed by <b>resolution</b>, not just by feature, then mapped to a physical process module.</div></div>
+    <div class="thesis"><div class="k">Why this scores</div>
+      <div class="v">“Which features mattered” is a chart. “Which level of the hierarchy is at fault” is an instruction.</div></div>
+  </div>
+
+  <div class="body g-121">
+    <div class="col">
+      <div class="p acc" style="flex:1 1 auto">
+        <div class="lbl">One die, fully diagnosed</div>
+        <svg viewBox="0 0 300 300">
+          <rect x="0" y="0" width="300" height="46" rx="3" fill="#0F1720"/>
+          <text x="12" y="22" font-size="14" font-weight="700" fill="#fff">DIE (14, 22)</text>
+          <text x="288" y="22" text-anchor="end" font-family="IBM Plex Mono" font-size="15" font-weight="600" fill="#fff">0.83</text>
+          <text x="12" y="38" font-family="IBM Plex Mono" font-size="9.5" fill="#9DB0BC">FAILURE RISK</text>
+          <text x="288" y="38" text-anchor="end" font-family="IBM Plex Mono" font-size="9" fill="#9DB0BC">interval 0.71–0.91</text>
+
+          <text x="0" y="66" font-family="IBM Plex Mono" font-size="9.5" letter-spacing="1" fill="#63727F">ATTRIBUTION BY RESOLUTION · Σ = 100%</text>
+          <rect x="0" y="74" width="110" height="20" fill="#0E6F7C"/>
+          <rect x="110" y="74" width="100" height="20" fill="#6B4EA8"/>
+          <rect x="210" y="74" width="90" height="20" fill="#167A4C"/>
+          <text x="10" y="88" font-family="IBM Plex Mono" font-size="10" fill="#fff">DIE .31</text>
+          <text x="120" y="88" font-family="IBM Plex Mono" font-size="10" fill="#fff">SPATIAL .28</text>
+          <text x="220" y="88" font-family="IBM Plex Mono" font-size="10" fill="#fff">BLOCK .24</text>
+
+          <g font-size="11" fill="#2B3743">
+            <text x="0" y="118">▪ IDDQ sits 3.2σ above its expected value</text>
+            <text x="0" y="138">▪ 5×5 neighbourhood matches Edge-Ring, BNR 0.68</text>
+            <text x="0" y="158">▪ Attention concentrated on blocks 1420–1610</text>
+          </g>
+
+          <rect x="0" y="176" width="300" height="52" rx="3" fill="#FBF0DC" stroke="#B07500"/>
+          <text x="10" y="194" font-family="IBM Plex Mono" font-size="9" letter-spacing="1" fill="#B07500">ROOT CAUSE HYPOTHESIS</text>
+          <text x="10" y="212" font-size="12.5" font-weight="600" fill="#0F1720">RTP / anneal temperature regulation</text>
+
+          <rect x="0" y="236" width="300" height="52" rx="3" fill="#E4F3EB" stroke="#167A4C"/>
+          <text x="10" y="254" font-family="IBM Plex Mono" font-size="9" letter-spacing="1" fill="#167A4C">ENGINEERING ACTION</text>
+          <text x="10" y="272" font-size="12.5" font-weight="600" fill="#0F1720">Screen die · flag lot for thermal review</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="p">
+        <div class="lbl">Nine wafer signatures → nine physical causes → nine actions</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:2px">
+          <div style="text-align:center"><svg viewBox="0 0 70 70" height="66"><circle cx="35" cy="35" r="31" fill="#F7F9FB" stroke="#DCE3EA"/><circle cx="35" cy="35" r="11" fill="#B02135" opacity=".8"/></svg>
+            <div style="font-size:11.5px;font-weight:600;color:var(--ink)">Center</div>
+            <div style="font-size:9.6px;color:var(--muted);line-height:1.25">RF / flow<br>Chamber check</div></div>
+          <div style="text-align:center"><svg viewBox="0 0 70 70" height="66"><circle cx="35" cy="35" r="31" fill="#F7F9FB" stroke="#DCE3EA"/><circle cx="35" cy="35" r="21" fill="none" stroke="#B02135" stroke-width="8" opacity=".8"/></svg>
+            <div style="font-size:11.5px;font-weight:600;color:var(--ink)">Donut</div>
+            <div style="font-size:9.6px;color:var(--muted);line-height:1.25">Residue<br>Clean / strip</div></div>
+          <div style="text-align:center"><svg viewBox="0 0 70 70" height="66"><circle cx="35" cy="35" r="31" fill="#F7F9FB" stroke="#DCE3EA"/><circle cx="35" cy="35" r="28" fill="none" stroke="#B02135" stroke-width="6" opacity=".8"/></svg>
+            <div style="font-size:11.5px;font-weight:600;color:var(--ink)">Edge-Ring</div>
+            <div style="font-size:9.6px;color:var(--muted);line-height:1.25">RTP temp<br>Thermal module</div></div>
+          <div style="text-align:center"><svg viewBox="0 0 70 70" height="66"><circle cx="35" cy="35" r="31" fill="#F7F9FB" stroke="#DCE3EA"/><path d="M35 35 m-28 0 a28 28 0 0 1 20 -26" fill="none" stroke="#B02135" stroke-width="7" opacity=".8"/></svg>
+            <div style="font-size:11.5px;font-weight:600;color:var(--ink)">Edge-Loc</div>
+            <div style="font-size:9.6px;color:var(--muted);line-height:1.25">Load-lock<br>Valve inspection</div></div>
+          <div style="text-align:center"><svg viewBox="0 0 70 70" height="66"><circle cx="35" cy="35" r="31" fill="#F7F9FB" stroke="#DCE3EA"/><line x1="16" y1="54" x2="54" y2="16" stroke="#B02135" stroke-width="7" opacity=".8"/></svg>
+            <div style="font-size:11.5px;font-weight:600;color:var(--ink)">Scratch</div>
+            <div style="font-size:9.6px;color:var(--muted);line-height:1.25">Handling<br>Robot inspection</div></div>
+          <div style="text-align:center"><svg viewBox="0 0 70 70" height="66"><circle cx="35" cy="35" r="31" fill="#F7F9FB" stroke="#DCE3EA"/><circle cx="24" cy="46" r="10" fill="#B02135" opacity=".8"/></svg>
+            <div style="font-size:11.5px;font-weight:600;color:var(--ink)">Loc</div>
+            <div style="font-size:9.6px;color:var(--muted);line-height:1.25">Local excursion<br>Tool for that zone</div></div>
+        </div>
+        <p class="cap">Plus Random, Near-full and Clean. The classifier is a deliberately transparent rule set over the spatial features — every branch is auditable and it needs no training data.</p>
+      </div>
+
+      <div class="p">
+        <div class="lbl">Signature → dispatch, end to end</div>
+        <svg viewBox="0 0 640 76">
+          <defs><marker id="a8" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <path d="M0 0 L8 4 L0 8 Z" fill="#63727F"/></marker></defs>
+          <rect x="0" y="16" width="112" height="44" rx="3" fill="#fff" stroke="#6B4EA8" stroke-width="1.4"/>
+          <text x="56" y="35" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0F1720">Spatial features</text>
+          <text x="56" y="50" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#63727F">BNR · radial · run</text>
+          <path d="M112 38 L136 38" stroke="#63727F" marker-end="url(#a8)"/>
+          <rect x="138" y="16" width="112" height="44" rx="3" fill="#fff" stroke="#B07500" stroke-width="1.4"/>
+          <text x="194" y="35" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0F1720">Signature</text>
+          <text x="194" y="50" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#63727F">9 auditable classes</text>
+          <path d="M250 38 L274 38" stroke="#63727F" marker-end="url(#a8)"/>
+          <rect x="276" y="16" width="112" height="44" rx="3" fill="#fff" stroke="#B02135" stroke-width="1.4"/>
+          <text x="332" y="35" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0F1720">Physical cause</text>
+          <text x="332" y="50" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#63727F">process module</text>
+          <path d="M388 38 L412 38" stroke="#63727F" marker-end="url(#a8)"/>
+          <rect x="414" y="16" width="112" height="44" rx="3" fill="#fff" stroke="#167A4C" stroke-width="1.4"/>
+          <text x="470" y="35" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0F1720">Action</text>
+          <text x="470" y="50" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#63727F">inspect / escalate</text>
+          <path d="M526 38 L550 38" stroke="#63727F" marker-end="url(#a8)"/>
+          <rect x="552" y="16" width="88" height="44" rx="3" fill="#0F1720"/>
+          <text x="596" y="35" text-anchor="middle" font-size="11.5" font-weight="600" fill="#fff">Work order</text>
+          <text x="596" y="50" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#9DB0BC">+ scrap map CSV</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="p vio">
+        <h3>Calibration makes it priceable</h3>
+        <table style="font-size:11.8px">
+          <thead><tr><th></th><th class="n">Raw</th><th class="n">Calibrated</th></tr></thead>
+          <tbody>
+            <tr><td>Brier</td><td class="n">0.0640</td><td class="n" style="color:var(--ok)">0.0249</td></tr>
+            <tr><td>ECE</td><td class="n">0.1367</td><td class="n" style="color:var(--ok)">0.0056</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:5px;font-size:12.2px">Isotonic regression (Zadrozny &amp; Elkan 2002), fitted
+        on <b>validation only</b>. A stated risk of 0.30 really does mean three dies in ten.</p>
+      </div>
+      <div class="p" style="flex:1 1 auto">
+        <div class="lbl">Reliability · predicted vs observed</div>
+        <svg viewBox="0 0 190 170">
+          <line x1="26" y1="140" x2="180" y2="140" stroke="#0F1720"/>
+          <line x1="26" y1="14" x2="26" y2="140" stroke="#0F1720"/>
+          <line x1="26" y1="140" x2="176" y2="18" stroke="#8C99A5" stroke-dasharray="4 4"/>
+          <polyline points="28,138 46,127 62,116 82,101 102,84 124,63 148,40 172,20"
+            fill="none" stroke="#0E6F7C" stroke-width="2.4"/>
+          <g fill="#0E6F7C">
+            <circle cx="46" cy="127" r="2.6"/><circle cx="82" cy="101" r="2.6"/>
+            <circle cx="124" cy="63" r="2.6"/><circle cx="172" cy="20" r="2.6"/>
+          </g>
+          <text x="103" y="160" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#63727F">PREDICTED RISK</text>
+          <text x="14" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#63727F" transform="rotate(-90 14 80)">OBSERVED</text>
+        </svg>
+        <p class="cap">The dashed diagonal is perfect honesty. Our curve sits on it.</p>
+      </div>
+      <div class="p ok">
+        <div class="lbl">Economics at cost ratio 100</div>
+        <div style="font-size:26px;font-weight:700;color:var(--ok);line-height:1">76.1%</div>
+        <p style="font-size:12.2px;margin-top:3px">lower expected failure cost than shipping every die.
+        The console exposes cost ratio, die cost, volume and scrap ceiling as sliders — nobody has to take
+        one headline number on trust.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>WaferLens · Interpretability and decision layer</span><span>07 / 10</span></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 9 ══ -->
+<section class="slide" id="s9">
+  <div class="head">
+    <span class="sn">08</span>
+    <div><h2>WaferLens OS — 17 decks, every claim inspectable live</h2>
+      <div class="sub">Standard-library Python server, hand-written front end, zero new dependencies. It can start a real training run in front of you.</div></div>
+    <div class="thesis"><div class="k">What it is for</div>
+      <div class="v">A judge should not have to trust a slide. Every number on it is one click from its source.</div></div>
+  </div>
+
+  <div class="body g-32">
+    <div class="col">
+      <div class="p" style="flex:1 1 auto">
+        <div class="lbl">The console at a glance</div>
+        <svg viewBox="0 0 700 330">
+          <rect x="0" y="0" width="700" height="330" rx="4" fill="#0B1017"/>
+          <rect x="0" y="0" width="700" height="26" fill="#050A12"/>
+          <text x="12" y="17" font-family="IBM Plex Mono" font-size="11" font-weight="600" fill="#fff">WAFERLENS // OS</text>
+          <g font-family="IBM Plex Mono" font-size="9" fill="#4FE3F2">
+            <text x="330" y="17">AUC-PR 0.5767</text><text x="450" y="17">7.9× GDBN</text>
+            <text x="560" y="17">CUT 0.2833</text>
+          </g>
+          <rect x="0" y="26" width="128" height="304" fill="#070D16"/>
+          <g font-family="IBM Plex Sans" font-size="9.5" fill="#9DB0BC">
+            <rect x="0" y="34" width="128" height="16" fill="#0E2A33"/>
+            <text x="10" y="45" fill="#4FE3F2">Command Deck</text>
+            <text x="10" y="63">Live Pipeline Run</text><text x="10" y="80">Live Wafer Matrix</text>
+            <text x="10" y="97">Wafer Fleet Wall</text><text x="10" y="114">Threshold Studio</text>
+            <text x="10" y="131">Risk Observatory</text><text x="10" y="148">Calibration Lab</text>
+            <text x="10" y="165">Die Micro-Inspector</text><text x="10" y="182">Spatial Anomaly Maps</text>
+            <text x="10" y="199">Signature Atlas</text><text x="10" y="216">2000-Block Telemetry</text>
+            <text x="10" y="233">Waveform Bank</text><text x="10" y="250">AUC-PR Benchmarks</text>
+            <text x="10" y="267">Neural Core</text><text x="10" y="284">Robotics Interlock</text>
+            <text x="10" y="301">A–Z Pipeline</text><text x="10" y="318">Data Provenance</text>
+          </g>
+          <!-- reactor core -->
+          <circle cx="264" cy="150" r="86" fill="none" stroke="#16323D"/>
+          <circle cx="264" cy="150" r="66" fill="none" stroke="#16323D"/>
+          <g stroke="#4FE3F2" stroke-width="2" opacity=".85">
+            <line x1="264" y1="84" x2="264" y2="62"/><line x1="310" y1="104" x2="325" y2="89"/>
+            <line x1="330" y1="150" x2="352" y2="150"/><line x1="310" y1="196" x2="325" y2="211"/>
+            <line x1="264" y1="216" x2="264" y2="238"/><line x1="218" y1="196" x2="203" y2="211"/>
+            <line x1="198" y1="150" x2="176" y2="150"/><line x1="218" y1="104" x2="203" y2="89"/>
+          </g>
+          <circle cx="264" cy="150" r="46" fill="#0B2630"/>
+          <text x="264" y="152" text-anchor="middle" font-size="24" font-weight="700" fill="#4FE3F2">44.6%</text>
+          <text x="264" y="168" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#5E7A88">FAILURES CAUGHT</text>
+          <path d="M264 64 A86 86 0 0 1 322 218" fill="none" stroke="#4FD98F" stroke-width="4"/>
+          <!-- right stats -->
+          <g font-family="IBM Plex Mono" font-size="9" fill="#7C8DA0">
+            <rect x="380" y="40" width="300" height="1" fill="#16323D"/>
+            <text x="380" y="58">WAFERS HELD OUT</text><text x="676" y="58" text-anchor="end" fill="#fff">40</text>
+            <text x="380" y="78">ELIGIBLE DIES</text><text x="676" y="78" text-anchor="end" fill="#4FE3F2">32,598</text>
+            <text x="380" y="98">NEW FAILURES</text><text x="676" y="98" text-anchor="end" fill="#F0B429">1,380</text>
+            <text x="380" y="118">DIES FLAGGED</text><text x="676" y="118" text-anchor="end" fill="#B388FF">909</text>
+            <text x="380" y="138">CAUGHT</text><text x="676" y="138" text-anchor="end" fill="#4FD98F">616</text>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="9" fill="#7C8DA0">
+            <text x="380" y="168">INTEGRITY CHECKS</text>
+            <text x="676" y="168" text-anchor="end" fill="#4FD98F">8 / 8 PASS</text>
+          </g>
+          <!-- waveform -->
+          <rect x="380" y="186" width="300" height="60" fill="#050A12" stroke="#16323D"/>
+          <polyline points="384,232 400,214 416,236 432,206 448,228 464,196 480,226 496,212 512,240 528,204 544,230 560,216 576,238 592,200 608,228 624,218 640,234 656,208 672,226"
+            fill="none" stroke="#4FE3F2" stroke-width="1.6"/>
+          <text x="386" y="198" font-family="IBM Plex Mono" font-size="7.5" fill="#5E7A88">FLEET RISK TRACE</text>
+          <rect x="380" y="256" width="146" height="58" fill="#0B1D16" stroke="#1E5C3C"/>
+          <text x="453" y="282" text-anchor="middle" font-size="19" font-weight="700" fill="#4FD98F">0.5767</text>
+          <text x="453" y="298" text-anchor="middle" font-family="IBM Plex Mono" font-size="7.5" fill="#4A7A63">MODEL B AUC-PR</text>
+          <rect x="534" y="256" width="146" height="58" fill="#1A1520" stroke="#4A3A66"/>
+          <text x="607" y="282" text-anchor="middle" font-size="19" font-weight="700" fill="#B388FF">+5.3%</text>
+          <text x="607" y="298" text-anchor="middle" font-family="IBM Plex Mono" font-size="7.5" fill="#6B5A8A">BLOCK DATA GAIN</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="p acc">
+        <h3>Live pipeline runner</h3>
+        <p>Pressing <b>Execute</b> starts a real Python subprocess and streams its stdout back. When it
+        finishes, the dashboard reloads from the artifacts that run just wrote. Only five whitelisted
+        presets can ever start — nothing the browser sends reaches a shell.</p>
+        <span class="pill acc">smoke pipeline · 1m 50s</span> <span class="pill grey">full · 40m</span>
+      </div>
+      <div class="p ok">
+        <h3>Provenance, verified live</h3>
+        <p style="font-size:12.3px">Opening the page re-hashes the source files, re-derives the splits and
+        re-checks all 32,598 predictions against the contract.</p>
+        <div class="chips" style="margin-top:4px">
+          <span class="chip on">WM-811K unmodified</span><span class="chip on">generator untouched</span>
+          <span class="chip on">zero wafer leakage</span><span class="chip on">pre-test excluded</span>
+          <span class="chip on">kit trap handled</span><span class="chip on">threshold ≠ 0.5</span>
+          <span class="chip on">contract holds</span><span class="chip on">settings are theirs</span>
+        </div>
+      </div>
+      <div class="p bad">
+        <h3>What is real, and what is stagecraft</h3>
+        <p style="font-size:12.3px">Every risk, curve, waveform, count and export on every deck is computed
+        from the data. The cleanroom map, robot arm and SECS/GEM stream illustrate what an integration
+        would look like — they are <b>not</b> connected to equipment, and three buttons show a
+        confirmation message and change nothing. We say this before we are asked.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>WaferLens · The console</span><span>08 / 10</span></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ SLIDE 10 ══ -->
+<section class="slide" id="s10">
+  <div class="head">
+    <span class="sn">09</span>
+    <div><h2>Limits, what we would build next, and where the ideas came from</h2>
+      <div class="sub">A proof of concept that reports only its wins is not evidence.</div></div>
+    <div class="thesis"><div class="k">Our position</div>
+      <div class="v">Six things we expected to work did not. All six are measured, and all six are in the repository.</div></div>
+  </div>
+
+  <div class="body g3">
+    <div class="col">
+      <div class="p bad" style="flex:1 1 auto">
+        <h3>Expected vs measured</h3>
+        <table style="font-size:11.6px">
+          <thead><tr><th>We expected</th><th class="n">Measured</th></tr></thead>
+          <tbody>
+            <tr><td>Multi-scale spatial factory helps</td><td class="n" style="color:var(--bad)">−0.008</td></tr>
+            <tr><td>Neighbourhood carries the signal</td><td class="n" style="color:var(--bad)">+0.005</td></tr>
+            <tr><td>Per-wafer weights beat global</td><td class="n" style="color:var(--bad)">−0.013</td></tr>
+            <tr><td>SMOTE helps a rare class</td><td class="n" style="color:var(--bad)">−0.025</td></tr>
+            <tr><td>Venn-ABERS gives honest bands</td><td class="n" style="color:var(--bad)">11% cov.</td></tr>
+            <tr><td>Attention-MIL beats pooling</td><td class="n" style="color:var(--bad)">0.27 vs 0.58</td></tr>
+          </tbody>
+        </table>
+        <p class="cap">Each one changed the design rather than being quietly dropped. The wafer prior exists <i>because</i> the neighbourhood failed.</p>
+      </div>
+      <div class="p warn">
+        <h3>Honest limitations</h3>
+        <ul style="font-size:12px">
+          <li>55.4% escape rate at the shipped cut</li>
+          <li>The +0.029 A→B delta is one split, not significance-tested</li>
+          <li>Attention-MIL varies 0.27–0.60 across runs</li>
+          <li>One dataset, one generator configuration</li>
+          <li>Root-cause map is literature-based, not fab-validated</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="p">
+        <h3>What we would build next</h3>
+        <table style="font-size:11.8px">
+          <thead><tr><th>Horizon</th><th>Work</th></tr></thead>
+          <tbody>
+            <tr><td>Now</td><td>Bootstrap the A→B delta over wafers — turn a point estimate into an interval</td></tr>
+            <tr><td>Now</td><td>Seed-average the attention branch; explain the 0.27–0.60 spread</td></tr>
+            <tr><td>Short</td><td>Validate signature→module against real failure analysis</td></tr>
+            <tr><td>Short</td><td>Per-lot threshold — one global cut is wrong for nearly every wafer</td></tr>
+            <tr><td>Medium</td><td>Drift monitoring and scheduled retraining</td></tr>
+            <tr><td>Medium</td><td>Real MES integration behind the dispatch interface</td></tr>
+            <tr><td>Long</td><td>Cross-fab and cross-node generalisation study</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="p ok" style="flex:1 1 auto">
+        <h3>Deliverables, all five</h3>
+        <table style="font-size:11.8px">
+          <tbody>
+            <tr><td>1 · Model A</td><td class="n"><span class="pill ok">src/model_a.py</span></td></tr>
+            <tr><td>2 · Model B</td><td class="n"><span class="pill ok">model_b + block_encoder</span></td></tr>
+            <tr><td>3 · Comparison</td><td class="n"><span class="pill ok">comparison.md</span></td></tr>
+            <tr><td>4 · Interpretability</td><td class="n"><span class="pill ok">explain.py + 10 figures</span></td></tr>
+            <tr><td>5 · Imbalance</td><td class="n"><span class="pill ok">imbalance_analysis.md</span></td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:6px;font-size:12.2px"><b>Beyond the brief:</b> incumbent baselines, ablation
+        waterfall, calibration and intervals, cost-priced thresholds, root-cause mapping, a 17-deck
+        console, and eight live integrity checks.</p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="p" style="flex:1 1 auto">
+        <h3>Where the ideas came from</h3>
+        <table style="font-size:11.2px">
+          <thead><tr><th>Source</th><th>What we took</th></tr></thead>
+          <tbody>
+            <tr><td>Wu, Jang &amp; Chen 2015<br><span style="color:var(--faint);font-size:10.4px">IEEE TSM — WM-811K</span></td>
+              <td>The wafer map corpus underneath the generated data, and the nine signature classes</td></tr>
+            <tr><td>AEC-Q001<br><span style="color:var(--faint);font-size:10.4px">Part Average Testing</span></td>
+              <td>PAT and DPAT definitions used for our incumbent baselines</td></tr>
+            <tr><td>Ilse, Tomczak &amp; Welling 2018<br><span style="color:var(--faint);font-size:10.4px">ICML — Attention MIL</span></td>
+              <td>Gated attention <code>tanh(V)⊙σ(U)</code> for the block branch</td></tr>
+            <tr><td>Ke et al. 2017<br><span style="color:var(--faint);font-size:10.4px">NeurIPS — LightGBM</span></td>
+              <td>The estimator behind both models</td></tr>
+            <tr><td>Lundberg &amp; Lee 2017; Lundberg 2020<br><span style="color:var(--faint);font-size:10.4px">SHAP / TreeSHAP</span></td>
+              <td>Exact per-die attribution, grouped by resolution</td></tr>
+            <tr><td>Lin et al. 2017<br><span style="color:var(--faint);font-size:10.4px">ICCV — Focal loss</span></td>
+              <td>The winning imbalance rung</td></tr>
+            <tr><td>Chawla et al. 2002<br><span style="color:var(--faint);font-size:10.4px">JAIR — SMOTE</span></td>
+              <td>Ran it, measured harm, reported it</td></tr>
+            <tr><td>Zadrozny &amp; Elkan 2002<br><span style="color:var(--faint);font-size:10.4px">KDD — Isotonic</span></td>
+              <td>Probability calibration</td></tr>
+            <tr><td>Vovk &amp; Petej 2014; Lei et al. 2018<br><span style="color:var(--faint);font-size:10.4px">Venn-ABERS / split conformal</span></td>
+              <td>Uncertainty; measured degenerate, replaced with bootstrap</td></tr>
+            <tr><td>Akiba et al. 2019<br><span style="color:var(--faint);font-size:10.4px">KDD — Optuna</span></td>
+              <td>One 40-trial hyper-parameter study</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="p acc">
+        <h3>Run it yourself</h3>
+        <p style="font-family:var(--m);font-size:11.5px;line-height:1.6;color:var(--ink)">
+          python -m src.report --dataset full<br>
+          python -m webapp.server</p>
+        <p style="font-size:12px">Every figure on every slide traces to a timestamped row in
+        <code>results/results.csv</code>.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>WaferLens · Limits, next steps, references</span><span>09 / 10</span></div>
+</section>
+
+<script>
+// wafer grids, drawn rather than hand-authored as path data
+(function(){
+  function rnd(seed){let s=seed;return()=>(s=(s*16807)%2147483647)/2147483647;}
+  function grid(id,cx,cy,R,cell,pre,fail){
+    const g=document.getElementById(id); if(!g) return;
+    const r=rnd(97), n=Math.floor((R*2)/cell), o=cx-R;
+    let out='';
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+      const x=o+i*cell, y=(cy-R)+j*cell;
+      const dx=x+cell/2-cx, dy=y+cell/2-cy;
+      if(Math.hypot(dx,dy)>R-cell*0.6) continue;
+      const u=r();
+      let f='#BFD3DE';
+      if(u<pre) f='#B02135'; else if(u<pre+fail) f='#B07500';
+      out+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${cell-1}" height="${cell-1}" fill="${f}"/>`;
+    }
+    g.innerHTML=out;
+  }
+  grid('dies',150,150,124,9,0.17,0.042);
+  grid('w2',125,118,98,7,0.17,0.042);
+
+  // ?only=N renders a single slide, for image export
+  const m=new URLSearchParams(location.search).get('only');
+  if(m){
+    document.body.classList.add('solo');
+    const el=document.getElementById('s'+m);
+    if(el) el.classList.add('show');
+  }
+})();
+</script>
+</body>
+</html>
