@@ -38,6 +38,7 @@ class DiePrediction:
     conformal_lo: float | None = None
     conformal_hi: float | None = None
     root_cause: str | None = None    # from the spatial-signature lookup
+    consistency: dict | None = None  # cross-validation: spatial signature vs sub-die block signals
 
 
 def validate_predictions(preds: list[DiePrediction], *, require_block: bool = False) -> None:

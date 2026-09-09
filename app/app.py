@@ -92,13 +92,27 @@ def main() -> None:
     } for i, p in enumerate(preds)])
 
     # ---------------------------------------------------------------- header
-    c = st.columns(5)
-    c[0].metric("AUC-PR", f"{metrics.get('auc_pr', float('nan')):.4f}")
-    c[1].metric("F1 (fail)", f"{metrics.get('f1', float('nan')):.4f}")
-    c[2].metric("Recall", f"{metrics.get('recall', float('nan')):.3f}")
-    c[3].metric("Precision", f"{metrics.get('precision', float('nan')):.3f}")
-    c[4].metric("Threshold", f"{metrics.get('threshold', float('nan')):.3f}",
-                help="Tuned on the validation PR curve — never left at 0.5.")
+    valid_cons = [p for p in preds if getattr(p, "consistency", None)
+                  and p.consistency.get("status") in ("AGREE", "PARTIAL", "DISCREPANT")]
+    if valid_cons:
+        c = st.columns(6)
+        agreed = sum(1.0 if p.consistency["status"] == "AGREE" else 0.5 for p in valid_cons)
+        c[0].metric("AUC-PR", f"{metrics.get('auc_pr', float('nan')):.4f}")
+        c[1].metric("F1 (fail)", f"{metrics.get('f1', float('nan')):.4f}")
+        c[2].metric("Recall", f"{metrics.get('recall', float('nan')):.3f}")
+        c[3].metric("Precision", f"{metrics.get('precision', float('nan')):.3f}")
+        c[4].metric("Threshold", f"{metrics.get('threshold', float('nan')):.3f}",
+                    help="Tuned on the validation PR curve — never left at 0.5.")
+        c[5].metric("Concordance", f"{100 * agreed / len(valid_cons):.1f}%",
+                    help="Cross-validation agreement between spatial signature and sub-die blocks.")
+    else:
+        c = st.columns(5)
+        c[0].metric("AUC-PR", f"{metrics.get('auc_pr', float('nan')):.4f}")
+        c[1].metric("F1 (fail)", f"{metrics.get('f1', float('nan')):.4f}")
+        c[2].metric("Recall", f"{metrics.get('recall', float('nan')):.3f}")
+        c[3].metric("Precision", f"{metrics.get('precision', float('nan')):.3f}")
+        c[4].metric("Threshold", f"{metrics.get('threshold', float('nan')):.3f}",
+                    help="Tuned on the validation PR curve — never left at 0.5.")
 
     # ---------------------------------------------------------------- wafer
     order = (pdf_all.groupby("wafer_id")["y_true"].sum()
@@ -159,6 +173,19 @@ def main() -> None:
             st.error(f"**Signature: {sig}**")
             st.markdown(f"**Documented cause:** {cause}")
             st.success(f"**ACTION:** {action}")
+
+        cons = getattr(pred, "consistency", None)
+        if cons and cons.get("status") != "UNAVAILABLE":
+            st.markdown("#### Multimodal Verification (Spatial vs Block)")
+            status = cons["status"]
+            score = cons.get("score", 0.0)
+            evidence = cons.get("evidence", "")
+            if status == "AGREE":
+                st.success(f"**Consistency [{status}] ({int(score * 100)}%)**: {evidence}")
+            elif status == "PARTIAL":
+                st.info(f"**Consistency [{status}] ({int(score * 100)}%)**: {evidence}")
+            else:
+                st.warning(f"**Consistency [{status}] ({int(score * 100)}%)**: {evidence}")
 
         if pred.top_features:
             st.markdown("#### Top contributing features")

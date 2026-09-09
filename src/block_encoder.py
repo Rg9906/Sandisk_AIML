@@ -149,7 +149,7 @@ class MILBlockModel:
                 loss = loss_fn(self.net(xb, tb), yb)
                 loss.backward()
                 opt.step()
-                total += float(loss) * len(sel)
+                total += loss.detach().item() * len(sel)
 
             rec = {"epoch": epoch + 1, "train_loss": total / n,
                    "elapsed_s": round(time.time() - t0, 1)}

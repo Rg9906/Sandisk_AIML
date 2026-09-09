@@ -95,7 +95,7 @@ class DieFeaturizer:
         Z = R[el] / self.scale_
 
         self.clf_ = LogisticRegression(
-            penalty="l2", C=0.05, max_iter=2000, class_weight="balanced",
+            C=0.05, max_iter=2000, class_weight="balanced",
             solver="lbfgs", random_state=SEED,
         ).fit(Z, y)
 
@@ -118,7 +118,7 @@ class DieFeaturizer:
                 oof[te] = self.clf_.decision_function(Z[te])
                 continue
             m = LogisticRegression(
-                penalty="l2", C=0.05, max_iter=2000, class_weight="balanced",
+                C=0.05, max_iter=2000, class_weight="balanced",
                 solver="lbfgs", random_state=SEED,
             ).fit(Z[tr], y[tr])
             oof[te] = m.decision_function(Z[te])

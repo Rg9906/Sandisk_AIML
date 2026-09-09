@@ -195,6 +195,36 @@ def spatial_features(dies: pd.DataFrame, version: str = "v1") -> pd.DataFrame:
             # Handing the model the interaction directly beats making it rediscover it.
             f["sp_hazard"] = (1.0 + 3.0 * f["sp_bnr_5"] + 1.5 * f["sp_radial"])
 
+            # Vectorized pattern signature classification (Idea 1)
+            bnr = f["sp_bnr_5"]
+            rad_val = f["sp_radial"]
+            run_val = f["sp_longest_run"]
+            asym_val = f["sp_dir_asym"]
+            yw_val = f["sp_wafer_yield"]
+
+            s_clean = bnr < 0.05
+            s_nearfull = (~s_clean) & (yw_val < 0.45)
+            s_scratch = (~s_clean) & (~s_nearfull) & (run_val >= 6) & (asym_val > 1.0)
+            s_edgeloc = (~s_clean) & (~s_nearfull) & (~s_scratch) & (rad_val > 0.80) & (asym_val > 0.8)
+            s_edgering = (~s_clean) & (~s_nearfull) & (~s_scratch) & (rad_val > 0.80) & (asym_val <= 0.8)
+            s_center = (~s_clean) & (~s_nearfull) & (~s_scratch) & (~s_edgeloc) & (~s_edgering) & (rad_val < 0.35)
+            s_donut = ((~s_clean) & (~s_nearfull) & (~s_scratch) & (~s_edgeloc) & (~s_edgering)
+                       & (~s_center) & (rad_val >= 0.40) & (rad_val <= 0.75) & (bnr > 0.15))
+            s_loc = ((~s_clean) & (~s_nearfull) & (~s_scratch) & (~s_edgeloc) & (~s_edgering)
+                     & (~s_center) & (~s_donut) & (bnr > 0.15))
+            s_random = ((~s_clean) & (~s_nearfull) & (~s_scratch) & (~s_edgeloc) & (~s_edgering)
+                        & (~s_center) & (~s_donut) & (~s_loc))
+
+            f["sp_sig_clean"] = s_clean.astype(np.float32)
+            f["sp_sig_nearfull"] = s_nearfull.astype(np.float32)
+            f["sp_sig_scratch"] = s_scratch.astype(np.float32)
+            f["sp_sig_edgeloc"] = s_edgeloc.astype(np.float32)
+            f["sp_sig_edgering"] = s_edgering.astype(np.float32)
+            f["sp_sig_center"] = s_center.astype(np.float32)
+            f["sp_sig_donut"] = s_donut.astype(np.float32)
+            f["sp_sig_loc"] = s_loc.astype(np.float32)
+            f["sp_sig_random"] = s_random.astype(np.float32)
+
         frames.append(pd.DataFrame(f))
 
     out = pd.concat(frames, ignore_index=True).sort_values("_row_id")
@@ -210,5 +240,7 @@ def feature_names(version: str = "v1") -> list[str]:
         "sp_bnr_ratio_3_9", "sp_radial", "sp_radial_sq", "sp_angle_sin", "sp_angle_cos",
         "sp_edge_flag", "sp_dir_n", "sp_dir_s", "sp_dir_w", "sp_dir_e", "sp_dir_asym",
         "sp_longest_run", "sp_wafer_yield", "sp_wafer_n_dies", "sp_hazard",
+        "sp_sig_clean", "sp_sig_nearfull", "sp_sig_scratch", "sp_sig_edgeloc", "sp_sig_edgering",
+        "sp_sig_center", "sp_sig_donut", "sp_sig_loc", "sp_sig_random",
     ]
     return names

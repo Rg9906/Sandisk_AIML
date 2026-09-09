@@ -58,6 +58,8 @@ def main() -> None:
     ap.add_argument("--epochs", type=int, default=8)
     ap.add_argument("--mil-budget", type=float, default=1500.0)
     ap.add_argument("--skip-mil", action="store_true")
+    ap.add_argument("--retrain", action="store_true",
+                    help="Force a fresh training run even if a saved model cache exists.")
     args = ap.parse_args()
 
     t0 = time.time()
@@ -70,9 +72,27 @@ def main() -> None:
     for s in (train, val, test):
         print(" ", s.describe())
 
-    # ---------------------------------------------------- Tier 1 vs Tier 2
-    res = compare_block_encoders(train, val, test, epochs=args.epochs,
-                                 time_budget_s=0 if args.skip_mil else args.mil_budget)
+    # ---------------------------------------------------- model cache (save / load)
+    _cache_path = OUT / f"model_cache_{args.dataset}.pkl"
+
+    if _cache_path.exists() and not args.retrain:
+        print(f"\n  [CACHE] loading trained models from {_cache_path}")
+        print("  [CACHE] skip training entirely -- pass --retrain to force a fresh run")
+        with _cache_path.open("rb") as _fh:
+            _cache = pickle.load(_fh)
+        res = _cache["res"]
+        print(f"  [CACHE] loaded in {time.time() - t0:.1f}s")
+    else:
+        if args.retrain and _cache_path.exists():
+            print("  [CACHE] --retrain flag set -- ignoring existing cache, training fresh")
+        # -------------------------------------------- Tier 1 vs Tier 2
+        res = compare_block_encoders(train, val, test, epochs=args.epochs,
+                                     time_budget_s=0 if args.skip_mil else args.mil_budget)
+        # Save everything needed to regenerate reports without retraining.
+        with _cache_path.open("wb") as _fh:
+            pickle.dump({"res": res}, _fh)
+        print(f"\n  [CACHE] trained models saved to {_cache_path}")
+        print("  [CACHE] next run will skip training automatically (~1 min instead of ~40 min)")
     pooling = res["pooling"]
     p_pool = res["p_pooling"]
 

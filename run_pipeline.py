@@ -92,7 +92,7 @@ def run_model(kind: str, wave: int, train, val, test, *, explain: bool) -> dict:
     explainer = make_explainer(model) if explain else None
     preds = model.predict(test, explainer=explainer)
     X_te = model.design_matrix(test)
-    enrich_with_root_cause(preds, X_te, np.flatnonzero(el_te))
+    res_cons = enrich_with_root_cause(preds, X_te, np.flatnonzero(el_te))
     validate_predictions(preds)
 
     run_id = log_run(
@@ -104,6 +104,9 @@ def run_model(kind: str, wave: int, train, val, test, *, explain: bool) -> dict:
     )
     print(f"  AUC-PR={m['auc_pr']:.4f}  F1={m['f1']:.4f}  "
           f"recall={m['recall']:.3f}  precision={m['precision']:.3f}  (run {run_id})")
+    if res_cons and res_cons.get("n_scored", 0) > 0:
+        print(f"  concordance={res_cons['concordance_rate']:.1%} "
+              f"({res_cons['n_scored']:,} dies evaluated for spatial vs block consistency)")
 
     return {"model": f"Model {model.name}",
             **{k: m[k] for k in ("f1", "auc_pr", "auc_roc", "accuracy",
@@ -232,12 +235,17 @@ def main() -> int:
         # Cache predictions so the dashboard starts instantly and trains nothing.
         import pickle
         cache = Path(f"results/preds_{args.dataset}.pkl")
+        valid_c = [p for p in best["_preds"] if getattr(p, "consistency", None)
+                   and p.consistency.get("status") in ("AGREE", "PARTIAL", "DISCREPANT")]
+        c_rate = (sum(1.0 if p.consistency["status"] == "AGREE" else 0.5 for p in valid_c) / len(valid_c)) if valid_c else None
+        m_dict = ({k: best[k] for k in ("auc_pr", "f1", "recall", "precision", "accuracy")}
+                  | {"threshold": best["_obj"].threshold_})
+        if c_rate is not None:
+            m_dict["concordance"] = c_rate
         with cache.open("wb") as fh:
             pickle.dump({
                 "preds": best["_preds"],
-                "metrics": {k: best[k] for k in
-                            ("auc_pr", "f1", "recall", "precision", "accuracy")}
-                           | {"threshold": best["_obj"].threshold_},
+                "metrics": m_dict,
                 "model": best["model"], "wave": args.wave,
             }, fh)
         print(f"  wrote {cache} (dashboard cache)")
