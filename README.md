@@ -16,6 +16,66 @@ Die (31, 7)  —  failure risk 0.98   [Venn-ABERS 0.71–0.93]
 
 ---
 
+## At a glance
+
+![Python](https://img.shields.io/badge/python-3.10%2B-blue) ![Task](https://img.shields.io/badge/task-die%20yield%20prediction-informational) ![Metric](https://img.shields.io/badge/primary%20metric-AUC--PR%200.586-success) ![Interpretability](https://img.shields.io/badge/explains-die%20%C2%B7%20spatial%20%C2%B7%20block-blueviolet)
+
+<p align="center">
+  <img src="figures/wafer_heatmap.png" alt="One held-out wafer: pre-test map, predicted risk per die, and post-test truth" width="100%">
+  <br><sub><b>One held-out wafer.</b> Left: pre-test map (red = already failed). Middle: our predicted risk per die. Right: the new failures we are trying to predict (orange).</sub>
+</p>
+
+### How it works
+
+```mermaid
+flowchart LR
+    A["Wafer data<br/>500 die parametrics<br/>2000 block readings"] --> B["Split by wafer<br/>train on old_label == 0 only"]
+    B --> C1["Die features<br/>pooled anomaly score"]
+    B --> C2["Spatial features<br/>wafer prior, bad-neighbour ratio"]
+    B --> C3["Block features<br/>25 pooled statistics<br/>(attention-MIL kept for interpretability)"]
+    C1 --> MA["Model A<br/>die + spatial"]
+    C2 --> MA
+    C1 --> MB["Model B<br/>A + block readings"]
+    C2 --> MB
+    C3 --> MB
+    MA --> D["Calibration<br/>isotonic + bootstrap bands"]
+    MB --> D
+    D --> E["Signed SHAP<br/>attribution by resolution"]
+    E --> F["Root-cause map<br/>and recommended action"]
+    F --> G["Streamlit demo"]
+```
+
+### Results and diagnosis
+
+<table>
+  <tr>
+    <td width="50%"><img src="figures/pr_curves.png" alt="Precision-recall curves for Model A, Model B and baselines"><br><sub><b>Precision-recall.</b> Model A and Model B against the all-pass, DPAT, NNR and GDBN baselines.</sub></td>
+    <td width="50%"><img src="figures/yield_escape.png" alt="Yield loss versus escaped failures"><br><sub><b>Yield loss vs escapes.</b> The trade-off curve, with our operating point marked.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="figures/shap_waterfall.png" alt="SHAP waterfall explaining one die"><br><sub><b>Why this die?</b> A per-die SHAP waterfall showing which features pushed the risk up.</sub></td>
+    <td width="50%"><img src="figures/family_importance.png" alt="Global importance by resolution and top features"><br><sub><b>What matters globally.</b> Importance by resolution (die, spatial, block) and the top 15 features.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="figures/block_attention.png" alt="Raw block signal and where the model attended"><br><sub><b>Block attention.</b> The raw 2000-block signal for one die and where the attention branch looked, against a uniform-attention baseline.</sub></td>
+    <td width="50%"><img src="figures/calibration.png" alt="Calibration reliability diagram"><br><sub><b>Calibration.</b> Reliability diagram for the calibrated probabilities.</sub></td>
+  </tr>
+</table>
+
+### UI concept (design mockup, not the shipped demo)
+
+These screens are design concepts for a fab-operations console. **Every number on them is illustrative.** The working demo is the Streamlit app (`streamlit run app/app.py`) and the measured results are in `results/`.
+
+<p align="center">
+  <img src="stitch_waferlens_os_mission_control/waferlens_os_mission_control_neural_excursion_intelligence/screen.png" alt="WaferLens OS mission control concept" width="38%">
+  &nbsp;
+  <img src="stitch_waferlens_os_mission_control/waferlens_os_a_z_pipeline_architecture_flowchart/screen.png" alt="WaferLens OS pipeline walkthrough concept" width="26%">
+  &nbsp;
+  <img src="stitch_waferlens_os_mission_control/waferlens_os_model_benchmark_ablation_lab/screen.png" alt="WaferLens OS benchmark and ablation lab concept" width="26%">
+</p>
+
+---
+
 ## Quick start
 
 ```bash
