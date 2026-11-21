@@ -29,20 +29,20 @@ Die (31, 7)  —  failure risk 0.98   [Venn-ABERS 0.71–0.93]
 
 ```mermaid
 flowchart LR
-    A["Wafer data<br/>500 die parametrics<br/>2000 block readings"] --> B["Split by wafer<br/>train on old_label == 0 only"]
-    B --> C1["Die features<br/>pooled anomaly score"]
-    B --> C2["Spatial features<br/>wafer prior, bad-neighbour ratio"]
-    B --> C3["Block features<br/>25 pooled statistics<br/>(attention-MIL kept for interpretability)"]
-    C1 --> MA["Model A<br/>die + spatial"]
+    A[Wafer data: 500 die parametrics and 2000 block readings] --> B[Split by wafer, train on eligible dies only]
+    B --> C1[Die features: pooled anomaly score]
+    B --> C2[Spatial features: wafer prior and bad neighbour ratio]
+    B --> C3[Block features: 25 pooled statistics]
+    C1 --> MA[Model A: die plus spatial]
     C2 --> MA
-    C1 --> MB["Model B<br/>A + block readings"]
+    C1 --> MB[Model B: A plus block readings]
     C2 --> MB
     C3 --> MB
-    MA --> D["Calibration<br/>isotonic + bootstrap bands"]
+    MA --> D[Calibration: isotonic plus bootstrap bands]
     MB --> D
-    D --> E["Signed SHAP<br/>attribution by resolution"]
-    E --> F["Root-cause map<br/>and recommended action"]
-    F --> G["Streamlit demo"]
+    D --> E[Signed SHAP attribution by resolution]
+    E --> F[Root cause map and recommended action]
+    F --> G[Streamlit demo]
 ```
 
 ### Results and diagnosis
